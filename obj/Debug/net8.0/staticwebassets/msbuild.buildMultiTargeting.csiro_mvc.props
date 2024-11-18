@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="../build/csiro_mvc.props" />
+</Project>
