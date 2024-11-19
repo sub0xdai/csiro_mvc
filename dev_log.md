@@ -16,3 +16,17 @@
 - Set up authentication controllers
 - Design and implement views
 - Add .gitignore 
+
+# 11.19
+- Enhanced UI with modern, responsive design
+- Added Bootstrap Icons for visual elements
+- Fixed layout template and styles section
+- Implemented home page with card-based layout
+- Added hover effects and animations
+- Created basic navigation structure
+
+## Next session
+- Implement Account controllers (Register/Login/Logout)
+- Create Application submission flow
+- Setup database migrations
+- Add role-based access control

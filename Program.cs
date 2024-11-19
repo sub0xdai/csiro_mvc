@@ -6,6 +6,9 @@ using csiro_mvc.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configure Kestrel with URLs
+builder.WebHost.UseUrls("http://localhost:5002");
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
@@ -37,10 +40,22 @@ var app = builder.Build();
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts
     app.UseHsts();
+    app.UseHttpsRedirection();
+}
+else 
+{
+    // In development, don't redirect to HTTPS
+    app.UseDeveloperExceptionPage();
+    // Disable HTTPS redirection in development
+    app.Use(async (context, next) =>
+    {
+        context.Request.Scheme = "http";
+        await next();
+    });
 }
 
-app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
