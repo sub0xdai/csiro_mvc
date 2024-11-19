@@ -41,7 +41,7 @@ namespace csiro_mvc.Data
                     .HasMaxLength(100);
 
                 entity.Property(e => e.CreatedAt)
-                    .HasDefaultValueSql("GETDATE()");
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
             });
 
             // Configure Application entity
@@ -52,15 +52,22 @@ namespace csiro_mvc.Data
                     .HasForeignKey(d => d.UserId)
                     .OnDelete(DeleteBehavior.Cascade);
 
-                entity.Property(e => e.SubmissionDate)
+                entity.Property(e => e.ApplicationDate)
                     .IsRequired()
-                    .HasDefaultValueSql("GETDATE()");
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                 entity.Property(e => e.Status)
                     .IsRequired()
-                    .HasDefaultValue(ApplicationStatus.Submitted);
+                    .HasDefaultValue(ApplicationStatus.Pending);
 
-                entity.Property(e => e.AdminNotes)
+                entity.Property(e => e.University)
+                    .IsRequired()
+                    .HasMaxLength(200);
+
+                entity.Property(e => e.CoverLetter)
+                    .IsRequired();
+
+                entity.Property(e => e.CVFilePath)
                     .HasMaxLength(500);
             });
         }

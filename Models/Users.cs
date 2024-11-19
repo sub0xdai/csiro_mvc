@@ -16,28 +16,3 @@ namespace csiro_mvc.Models
         public DateTime? UpdatedAt { get; set; }
     }
 }
-
-// Models/Application.cs
-namespace csiro_mvc.Models
-{
-    public enum ApplicationStatus
-    {
-        Submitted,
-        UnderReview,
-        Shortlisted,
-        Invited,
-        Rejected
-    }
-
-    public class Application
-    {
-        public int Id { get; set; }
-        public string UserId { get; set; }
-        public User User { get; set; }
-        public ApplicationStatus Status { get; set; }
-        public DateTime SubmissionDate { get; set; }
-        public bool IsShortlisted { get; set; }
-        public DateTime? InterviewDate { get; set; }
-        public string AdminNotes { get; set; }
-    }
-}

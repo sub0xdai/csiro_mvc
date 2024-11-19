@@ -15,3 +15,4 @@
 - Create service layer
 - Set up authentication controllers
 - Design and implement views
+- Add .gitignore 
