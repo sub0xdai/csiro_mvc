@@ -12,8 +12,8 @@ using csiro_mvc.Data;
 namespace csiro_mvc.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241118014446_Initial")]
-    partial class Initial
+    [Migration("20241119022129_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -165,15 +165,29 @@ namespace csiro_mvc.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("AdminNotes")
-                        .IsRequired()
+                    b.Property<DateTime>("ApplicationDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("CVFilePath")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
-                    b.Property<DateTime?>("InterviewDate")
+                    b.Property<int>("CourseType")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("CoverLetter")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<double>("GPA")
+                        .HasColumnType("double precision");
+
+                    b.Property<DateTime?>("InterviewInvitationDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<bool>("IsShortlisted")
+                    b.Property<bool>("IsInvitedForInterview")
                         .HasColumnType("boolean");
 
                     b.Property<int>("Status")
@@ -181,10 +195,10 @@ namespace csiro_mvc.Migrations
                         .HasColumnType("integer")
                         .HasDefaultValue(0);
 
-                    b.Property<DateTime>("SubmissionDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("GETDATE()");
+                    b.Property<string>("University")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -220,7 +234,7 @@ namespace csiro_mvc.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("GETDATE()");
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)

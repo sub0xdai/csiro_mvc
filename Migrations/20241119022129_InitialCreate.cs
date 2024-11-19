@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace csiro_mvc.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -38,7 +38,7 @@ namespace csiro_mvc.Migrations
                     GPA = table.Column<double>(type: "double precision", nullable: false),
                     CoverLetter = table.Column<string>(type: "text", nullable: false),
                     CVPath = table.Column<string>(type: "text", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "GETDATE()"),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
@@ -88,11 +88,15 @@ namespace csiro_mvc.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     UserId = table.Column<string>(type: "text", nullable: false),
+                    CourseType = table.Column<int>(type: "integer", nullable: false),
+                    GPA = table.Column<double>(type: "double precision", nullable: false),
+                    University = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    CoverLetter = table.Column<string>(type: "text", nullable: false),
+                    CVFilePath = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    ApplicationDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
                     Status = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
-                    SubmissionDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "GETDATE()"),
-                    IsShortlisted = table.Column<bool>(type: "boolean", nullable: false),
-                    InterviewDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    AdminNotes = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false)
+                    IsInvitedForInterview = table.Column<bool>(type: "boolean", nullable: false),
+                    InterviewInvitationDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {

@@ -1,5 +1,6 @@
 // Models/User.cs
 using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace csiro_mvc.Models
 {
@@ -12,7 +13,9 @@ namespace csiro_mvc.Models
         public double GPA { get; set; }
         public string CoverLetter { get; set; }
         public string CVPath { get; set; }
-        public DateTime CreatedAt { get; set; }
+        
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
     }
 }

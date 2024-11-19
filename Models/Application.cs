@@ -33,7 +33,7 @@ namespace csiro_mvc.Models
         public string? CVFilePath { get; set; }
 
         [Display(Name = "Application Date")]
-        public DateTime ApplicationDate { get; set; } = DateTime.UtcNow;
+        public DateTime ApplicationDate { get; set; }
 
         [Display(Name = "Application Status")]
         public ApplicationStatus Status { get; set; } = ApplicationStatus.Pending;
@@ -50,19 +50,28 @@ namespace csiro_mvc.Models
         [Display(Name = "Master of Artificial Intelligence")]
         ArtificialIntelligence,
         
-        [Display(Name = "Master of Information Technology")]
-        InformationTechnology,
+        [Display(Name = "Master of Cybersecurity")]
+        Cybersecurity,
         
-        [Display(Name = "Master of Science (Statistics)")]
-        Statistics
+        [Display(Name = "Master of Computer Science")]
+        ComputerScience
     }
 
     public enum ApplicationStatus
     {
+        [Display(Name = "Pending")]
         Pending,
+        
+        [Display(Name = "Under Review")]
         UnderReview,
+        
+        [Display(Name = "Shortlisted")]
         Shortlisted,
-        Rejected,
-        Accepted
+        
+        [Display(Name = "Accepted")]
+        Accepted,
+        
+        [Display(Name = "Rejected")]
+        Rejected
     }
 }

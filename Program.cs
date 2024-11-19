@@ -48,18 +48,12 @@ else
 {
     // In development, don't redirect to HTTPS
     app.UseDeveloperExceptionPage();
-    // Disable HTTPS redirection in development
-    app.Use(async (context, next) =>
-    {
-        context.Request.Scheme = "http";
-        await next();
-    });
 }
 
 app.UseStaticFiles();
-
 app.UseRouting();
 
+// Add authentication and authorization middleware
 app.UseAuthentication();
 app.UseAuthorization();
 
