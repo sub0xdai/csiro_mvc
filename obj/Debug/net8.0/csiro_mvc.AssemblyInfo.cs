@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("csiro_mvc")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+36ba1408053d0080dfa4209cbe4a0f73642c3729")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1596e0f9272322f6ccca93157e933261b00d4a6a")]
 [assembly: System.Reflection.AssemblyProductAttribute("csiro_mvc")]
 [assembly: System.Reflection.AssemblyTitleAttribute("csiro_mvc")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

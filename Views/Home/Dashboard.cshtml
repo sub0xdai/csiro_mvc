@@ -1,0 +1,63 @@
+@model csiro_mvc.Models.ViewModels.DashboardViewModel
+
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Welcome, @Model.FirstName!</h5>
+                    <p class="card-text">
+                        <strong>Department:</strong> @Model.Department<br>
+                        <strong>Role:</strong> @Model.Role<br>
+                        <strong>Last Login:</strong> @Model.LastLoginTime.ToString("g")
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Your Applications</h5>
+                    <p class="card-text">
+                        You have submitted <strong>@Model.TotalApplications</strong> application(s).
+                    </p>
+                    <a href="#" class="btn btn-primary">View Applications</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Recent Research Programs</h5>
+                    @if (Model.RecentPrograms != null && Model.RecentPrograms.Any())
+                    {
+                        <div class="list-group">
+                            @foreach (var program in Model.RecentPrograms)
+                            {
+                                <a href="#" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">@program.Name</h6>
+                                        <small>@program.OpenPositions positions</small>
+                                    </div>
+                                    <p class="mb-1">@program.Description</p>
+                                </a>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p>No recent programs available.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

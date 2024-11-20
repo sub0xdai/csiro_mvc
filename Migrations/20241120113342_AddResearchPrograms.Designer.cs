@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using csiro_mvc.Data;
@@ -11,9 +12,11 @@ using csiro_mvc.Data;
 namespace csiro_mvc.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241120113342_AddResearchPrograms")]
+    partial class AddResearchPrograms
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -373,43 +376,6 @@ namespace csiro_mvc.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ResearchPrograms");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Description = "Digital and data innovation for Australia's digital future",
-                            Name = "Data61",
-                            OpenPositions = 5
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Description = "Unlocking the secrets of the universe and supporting Australia's space industry",
-                            Name = "Space and Astronomy",
-                            OpenPositions = 3
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Description = "Developing sustainable energy solutions for a cleaner future",
-                            Name = "Energy",
-                            OpenPositions = 4
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Description = "Advanced manufacturing technologies and processes",
-                            Name = "Manufacturing",
-                            OpenPositions = 2
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Description = "Improving health outcomes and protecting Australia's biosecurity",
-                            Name = "Health and Biosecurity",
-                            OpenPositions = 6
-                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

@@ -204,5 +204,32 @@ namespace csiro_mvc.Services
                 .OrderByDescending(a => a.CreatedAt)
                 .ToListAsync();
         }
+
+        public async Task<List<ResearchProgram>> GetRecentProgramsAsync(int count = 5)
+        {
+            return await _context.ResearchPrograms
+                .OrderByDescending(p => p.Id)
+                .Take(count)
+                .ToListAsync();
+        }
+
+        public async Task<List<ResearchProgram>> GetAllProgramsAsync()
+        {
+            return await _context.ResearchPrograms
+                .OrderBy(p => p.Name)
+                .ToListAsync();
+        }
+
+        public async Task<ResearchProgram> GetProgramByIdAsync(int id)
+        {
+            return await _context.ResearchPrograms
+                .FirstOrDefaultAsync(p => p.Id == id);
+        }
+
+        public async Task<int> GetUserApplicationsCountAsync(string userId)
+        {
+            return await _context.Applications
+                .CountAsync(a => a.UserId == userId);
+        }
     }
 }

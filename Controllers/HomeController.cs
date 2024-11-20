@@ -1,7 +1,10 @@
 using System.Diagnostics;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using csiro_mvc.Models;
+using csiro_mvc.Models.ViewModels;
 using csiro_mvc.Services;
 using System.Threading.Tasks;
 using System.Linq;
@@ -12,16 +15,50 @@ namespace csiro_mvc.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly IApplicationService _applicationService;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public HomeController(ILogger<HomeController> logger, IApplicationService applicationService)
+        public HomeController(
+            ILogger<HomeController> logger, 
+            IApplicationService applicationService,
+            UserManager<ApplicationUser> userManager)
         {
             _logger = logger;
             _applicationService = applicationService;
+            _userManager = userManager;
         }
 
         public IActionResult Index()
         {
+            if (User?.Identity?.IsAuthenticated == true)
+            {
+                return RedirectToAction(nameof(Dashboard));
+            }
             return View();
+        }
+
+        [Authorize]
+        public async Task<IActionResult> Dashboard()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var roles = await _userManager.GetRolesAsync(user);
+            var viewModel = new DashboardViewModel
+            {
+                UserName = user.UserName ?? "User",
+                FirstName = user.FirstName ?? string.Empty,
+                LastName = user.LastName ?? string.Empty,
+                Department = user.Department ?? "Not Set",
+                Role = roles.FirstOrDefault() ?? "User",
+                LastLoginTime = DateTime.Now,
+                TotalApplications = await _applicationService.GetUserApplicationsCountAsync(user.Id),
+                RecentPrograms = await _applicationService.GetRecentProgramsAsync()
+            };
+
+            return View(viewModel);
         }
 
         public IActionResult Programs()
