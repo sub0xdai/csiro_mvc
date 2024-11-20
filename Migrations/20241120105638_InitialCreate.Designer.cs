@@ -12,8 +12,8 @@ using csiro_mvc.Data;
 namespace csiro_mvc.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241120035646_AddDepartmentToUser")]
-    partial class AddDepartmentToUser
+    [Migration("20241120105638_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -165,10 +165,16 @@ namespace csiro_mvc.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("CourseType")
+                    b.Property<string>("CVPath")
+                        .HasColumnType("text");
+
+                    b.Property<int>("CourseType")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("CoverLetter")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -177,8 +183,11 @@ namespace csiro_mvc.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<double>("GPA")
+                        .HasColumnType("double precision");
 
                     b.Property<int>("Status")
                         .ValueGeneratedOnAdd()
@@ -186,6 +195,11 @@ namespace csiro_mvc.Migrations
                         .HasDefaultValue(4);
 
                     b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("University")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
@@ -252,7 +266,8 @@ namespace csiro_mvc.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Department")
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
@@ -267,6 +282,9 @@ namespace csiro_mvc.Migrations
                         .HasColumnType("character varying(100)");
 
                     b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsProfileComplete")
                         .HasColumnType("boolean");
 
                     b.Property<string>("LastName")
@@ -298,10 +316,12 @@ namespace csiro_mvc.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("Position")
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("Qualification")
-                        .HasColumnType("text");
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");
@@ -310,7 +330,8 @@ namespace csiro_mvc.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("University")
-                        .HasColumnType("text");
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -320,6 +341,8 @@ namespace csiro_mvc.Migrations
                         .HasColumnType("character varying(256)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Department");
 
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");

@@ -4,6 +4,7 @@ using csiro_mvc.Data;
 using csiro_mvc.Models;
 using csiro_mvc.Repositories;
 using csiro_mvc.Services;
+using csiro_mvc.Middleware;
 using Serilog;
 using Serilog.Events;
 using Microsoft.AspNetCore.Authorization;
@@ -131,6 +132,7 @@ try
 
     app.UseAuthentication();
     app.UseAuthorization();
+    app.UseProfileCompletion();
 
     app.MapControllerRoute(
         name: "default",

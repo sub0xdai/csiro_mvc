@@ -162,10 +162,16 @@ namespace csiro_mvc.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("CourseType")
+                    b.Property<string>("CVPath")
+                        .HasColumnType("text");
+
+                    b.Property<int>("CourseType")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("CoverLetter")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -174,8 +180,11 @@ namespace csiro_mvc.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<double>("GPA")
+                        .HasColumnType("double precision");
 
                     b.Property<int>("Status")
                         .ValueGeneratedOnAdd()
@@ -183,6 +192,11 @@ namespace csiro_mvc.Migrations
                         .HasDefaultValue(4);
 
                     b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("University")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
@@ -200,7 +214,7 @@ namespace csiro_mvc.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Applications", (string)null);
+                    b.ToTable("Applications");
                 });
 
             modelBuilder.Entity("csiro_mvc.Models.ApplicationSettings", b =>
@@ -230,7 +244,7 @@ namespace csiro_mvc.Migrations
                     b.HasIndex("ApplicationId")
                         .IsUnique();
 
-                    b.ToTable("ApplicationSettings", (string)null);
+                    b.ToTable("ApplicationSettings");
                 });
 
             modelBuilder.Entity("csiro_mvc.Models.ApplicationUser", b =>
@@ -265,6 +279,9 @@ namespace csiro_mvc.Migrations
                         .HasColumnType("character varying(100)");
 
                     b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsProfileComplete")
                         .HasColumnType("boolean");
 
                     b.Property<string>("LastName")

@@ -33,13 +33,14 @@ namespace csiro_mvc.Migrations
                     Id = table.Column<string>(type: "text", nullable: false),
                     FirstName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     LastName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    Qualification = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    University = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
-                    GPA = table.Column<double>(type: "double precision", nullable: false),
-                    CoverLetter = table.Column<string>(type: "text", nullable: false),
-                    CVPath = table.Column<string>(type: "text", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    Department = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    Position = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    Qualification = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    University = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    IsProfileComplete = table.Column<bool>(type: "boolean", nullable: false),
                     UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
@@ -88,15 +89,16 @@ namespace csiro_mvc.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     UserId = table.Column<string>(type: "text", nullable: false),
+                    Title = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Description = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: false),
                     CourseType = table.Column<int>(type: "integer", nullable: false),
                     GPA = table.Column<double>(type: "double precision", nullable: false),
-                    University = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
-                    CoverLetter = table.Column<string>(type: "text", nullable: false),
-                    CVFilePath = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
-                    ApplicationDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
-                    Status = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
-                    IsInvitedForInterview = table.Column<bool>(type: "boolean", nullable: false),
-                    InterviewInvitationDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    University = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    CoverLetter = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: false),
+                    CVPath = table.Column<string>(type: "text", nullable: true),
+                    Status = table.Column<int>(type: "integer", nullable: false, defaultValue: 4),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -194,10 +196,43 @@ namespace csiro_mvc.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "ApplicationSettings",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    ApplicationId = table.Column<int>(type: "integer", nullable: false),
+                    NotificationsEnabled = table.Column<bool>(type: "boolean", nullable: false),
+                    Theme = table.Column<string>(type: "text", nullable: false),
+                    Language = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ApplicationSettings", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ApplicationSettings_Applications_ApplicationId",
+                        column: x => x.ApplicationId,
+                        principalTable: "Applications",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Applications_CreatedAt",
+                table: "Applications",
+                column: "CreatedAt");
+
             migrationBuilder.CreateIndex(
                 name: "IX_Applications_UserId",
                 table: "Applications",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ApplicationSettings_ApplicationId",
+                table: "ApplicationSettings",
+                column: "ApplicationId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
@@ -231,6 +266,11 @@ namespace csiro_mvc.Migrations
                 column: "NormalizedEmail");
 
             migrationBuilder.CreateIndex(
+                name: "IX_AspNetUsers_Department",
+                table: "AspNetUsers",
+                column: "Department");
+
+            migrationBuilder.CreateIndex(
                 name: "UserNameIndex",
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
@@ -241,7 +281,7 @@ namespace csiro_mvc.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Applications");
+                name: "ApplicationSettings");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoleClaims");
@@ -257,6 +297,9 @@ namespace csiro_mvc.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUserTokens");
+
+            migrationBuilder.DropTable(
+                name: "Applications");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
