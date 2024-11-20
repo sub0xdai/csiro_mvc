@@ -22,6 +22,10 @@ build_property._RazorSourceGeneratorDebug =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQWNjb3VudC9BdXRoLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[/home/sub0x/1-projects/MVC/csiro_mvc/Views/Application/Apply.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXBwbGljYXRpb24vQXBwbHkuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
 [/home/sub0x/1-projects/MVC/csiro_mvc/Views/Application/Create.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXBwbGljYXRpb24vQ3JlYXRlLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
