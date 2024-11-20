@@ -1,9 +1,8 @@
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 using csiro_mvc.Models;
 using csiro_mvc.Services;
-using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace csiro_mvc.Controllers
 {
@@ -11,61 +10,69 @@ namespace csiro_mvc.Controllers
     public class ApplicationController : Controller
     {
         private readonly IApplicationService _applicationService;
-        private readonly IApplicationSettingsService _settingsService;
 
-        public ApplicationController(
-            IApplicationService applicationService,
-            IApplicationSettingsService settingsService)
+        public ApplicationController(IApplicationService applicationService)
         {
             _applicationService = applicationService;
-            _settingsService = settingsService;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchTerm)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId == null)
+            var applications = string.IsNullOrEmpty(searchTerm)
+                ? await _applicationService.GetApplicationsByUserIdAsync(userId)
+                : await _applicationService.SearchApplicationsAsync(searchTerm);
+            return View(applications);
+        }
+
+        public async Task<IActionResult> Details(int id)
+        {
+            var application = await _applicationService.GetApplicationByIdAsync(id);
+            if (application == null)
             {
-                return Unauthorized();
+                return NotFound();
             }
 
-            var applications = await _applicationService.GetApplicationsByUserIdAsync(userId);
-            return View(applications);
+            // Ensure the user can only view their own applications
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (application.UserId != userId)
+            {
+                return Forbid();
+            }
+
+            return View(application);
         }
 
         public IActionResult Create()
         {
-            return View(new Application());
+            return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Application application)
         {
-            if (!ModelState.IsValid)
-                return View(application);
-
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId == null)
+            if (ModelState.IsValid)
             {
-                return Unauthorized();
+                application.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                await _applicationService.CreateApplicationAsync(application);
+                return RedirectToAction(nameof(Index));
             }
-
-            application.UserId = userId;
-            await _applicationService.CreateApplicationAsync(application);
-            return RedirectToAction(nameof(Index));
+            return View(application);
         }
 
         public async Task<IActionResult> Edit(int id)
         {
             var application = await _applicationService.GetApplicationByIdAsync(id);
             if (application == null)
+            {
                 return NotFound();
+            }
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId == null || application.UserId != userId)
+            if (application.UserId != userId)
             {
-                return Unauthorized();
+                return Forbid();
             }
 
             return View(application);
@@ -76,84 +83,33 @@ namespace csiro_mvc.Controllers
         public async Task<IActionResult> Edit(int id, Application application)
         {
             if (id != application.Id)
-                return NotFound();
-
-            if (!ModelState.IsValid)
-                return View(application);
-
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId == null)
             {
-                return Unauthorized();
+                return NotFound();
             }
 
             var existingApplication = await _applicationService.GetApplicationByIdAsync(id);
-            if (existingApplication == null || existingApplication.UserId != userId)
+            if (existingApplication == null)
             {
-                return Unauthorized();
-            }
-
-            application.UserId = userId;
-            await _applicationService.UpdateApplicationAsync(application);
-            return RedirectToAction(nameof(Index));
-        }
-
-        public async Task<IActionResult> Status()
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId == null)
-            {
-                return Unauthorized();
-            }
-
-            var applications = await _applicationService.GetApplicationsByUserIdAsync(userId);
-            return View(applications);
-        }
-
-        public async Task<IActionResult> Settings(int id)
-        {
-            var application = await _applicationService.GetApplicationByIdAsync(id);
-            if (application == null)
                 return NotFound();
+            }
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId == null || application.UserId != userId)
+            if (existingApplication.UserId != userId)
             {
-                return Unauthorized();
+                return Forbid();
             }
 
-            var settings = await _settingsService.GetSettingsByApplicationIdAsync(id);
-            if (settings == null)
+            if (ModelState.IsValid)
             {
-                settings = new ApplicationSettings { ApplicationId = id };
-                await _settingsService.CreateSettingsAsync(settings);
+                application.UserId = userId;
+                var updatedApplication = await _applicationService.UpdateApplicationAsync(id, application);
+                if (updatedApplication == null)
+                {
+                    return NotFound();
+                }
+                return RedirectToAction(nameof(Index));
             }
-
-            return View(settings);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Settings(int id, ApplicationSettings settings)
-        {
-            if (id != settings.ApplicationId)
-                return NotFound();
-
-            if (!ModelState.IsValid)
-                return View(settings);
-
-            var application = await _applicationService.GetApplicationByIdAsync(id);
-            if (application == null)
-                return NotFound();
-
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId == null || application.UserId != userId)
-            {
-                return Unauthorized();
-            }
-
-            await _settingsService.UpdateSettingsAsync(settings);
-            return RedirectToAction(nameof(Index));
+            return View(application);
         }
 
         [HttpPost]
@@ -162,12 +118,14 @@ namespace csiro_mvc.Controllers
         {
             var application = await _applicationService.GetApplicationByIdAsync(id);
             if (application == null)
+            {
                 return NotFound();
+            }
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId == null || application.UserId != userId)
+            if (application.UserId != userId)
             {
-                return Unauthorized();
+                return Forbid();
             }
 
             await _applicationService.DeleteApplicationAsync(id);

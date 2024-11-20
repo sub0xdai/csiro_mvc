@@ -1,52 +1,99 @@
-# CSIRO Application Portal
+# CSIRO Research Application Portal
 
-A modern web application for managing research candidate applications at CSIRO. Built with ASP.NET Core MVC and PostgreSQL.
+## Project Overview
+A web application for CSIRO to manage applications for research positions in Machine Learning and Data Science, focusing on COVID-19 vaccination causality research in Australia.
 
-## What it does
+## Core Requirements Analysis
 
-- **Application Submission**: Streamlined process for candidates to submit research applications
-- **Status Tracking**: Real-time tracking of application progress
-- **Program Discovery**: Browse available research opportunities
-- **Secure Authentication**: Role-based access for applicants and administrators
+### User Authentication & Authorization
+- [x] User Registration System
+- [x] Role-based Authorization (Admin/Applicant)
+- [x] Secure Password Encryption
+- [x] Session Management
 
-## Technical Stack
+### Applicant Features
+1. Profile Management
+   - [ ] Contact Details
+   - [ ] Educational Background
+   - [ ] Profile Editing Capability
 
-- **Framework**: ASP.NET Core MVC (.NET 8.0)
-- **Database**: PostgreSQL with Entity Framework Core
-- **Authentication**: ASP.NET Core Identity
-- **UI**: Bootstrap 5 with responsive design
+2. Application Submission
+   - [ ] Course Selection (Dropdown)
+     * Master of Data Science
+     * Master of Artificial Intelligence
+     * Master of Information Technology
+     * Master of Science (Statistics)
+   - [ ] GPA Entry (Server-side validation)
+     * Must be ≥ 3.0
+     * Double/Float validation
+   - [ ] University Selection
+     * Limited to top 100 global universities
+   - [ ] Cover Letter Submission
+   - [ ] CV Upload (Optional)
 
-## Key Features
+### Administrator Features
+1. Application Management
+   - [ ] View All Applications
+   - [ ] Sort Applications by GPA
+   - [ ] Search Functionality
+   - [ ] Configurable GPA Cutoff
 
-- Modern, responsive interface
-- Secure user authentication
-- Role-based access control
-- Application status tracking
-- Document upload and management
-- Email notifications
-- Admin dashboard
+2. Interview Process
+   - [ ] Automated Email System
+   - [ ] Template-based Messages
+   - [ ] Top 10 Candidate Selection
 
-## Requirements
+### Security Requirements
+1. Data Protection
+   - [ ] Password Encryption
+   - [ ] Input Sanitization
+   - [ ] Server-side Validation
 
-- .NET 8.0 SDK
-- PostgreSQL 15+
-- Modern web browser
+2. Access Control
+   - [ ] Role-based Access
+   - [ ] Session Management
+   - [ ] Secure Routes
 
-## Development
+### Technical Stack
+- Backend: ASP.NET Core MVC (C#)
+- Database: PostgreSQL
+- Authentication: ASP.NET Core Identity
+- Frontend: Bootstrap, jQuery
+- Email: SMTP Integration
 
-1. Clone the repository
-2. Install dependencies:
-   ```bash
-   dotnet restore
-   ```
-3. Update database connection in `appsettings.json`
-4. Run migrations:
-   ```bash
-   dotnet ef database update
-   ```
-5. Start the application:
-   ```bash
-   dotnet run
-   ```
+## Project Deliverables
+1. [ ] UML & ER Diagrams Documentation
+2. [x] MVC Implementation
+3. [ ] Test Cases Documentation
+4. [ ] Database SQL File
 
-Access the application at `http://localhost:5002`
+## Development Progress
+- [x] Basic Project Setup
+- [x] Database Configuration
+- [x] User Authentication System
+- [ ] Application Form
+- [ ] Admin Dashboard
+- [ ] Email Integration
+- [ ] Testing & Documentation
+
+## Testing Requirements
+- [ ] Unit Tests
+- [ ] Integration Tests
+- [ ] User Acceptance Testing
+- [ ] Security Testing
+
+## Security Measures
+- [x] Password Encryption
+- [ ] Input Validation
+- [ ] XSS Prevention
+- [ ] CSRF Protection
+- [ ] SQL Injection Prevention
+
+## Installation & Setup
+[To be added]
+
+## Contributing
+This is a group assessment project (2+ members). Each member's contributions should be clearly documented and demonstrable.
+
+## License
+[To be added]

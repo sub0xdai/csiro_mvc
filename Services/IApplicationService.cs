@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using csiro_mvc.Models;
 
@@ -9,9 +8,9 @@ namespace csiro_mvc.Services
         Task<IEnumerable<Application>> GetAllApplicationsAsync();
         Task<Application?> GetApplicationByIdAsync(int id);
         Task<IEnumerable<Application>> GetApplicationsByUserIdAsync(string userId);
+        Task<IEnumerable<Application>> SearchApplicationsAsync(string searchTerm);
         Task<Application> CreateApplicationAsync(Application application);
-        Task UpdateApplicationAsync(Application application);
-        Task DeleteApplicationAsync(int id);
-        Task<bool> ApplicationExistsAsync(int id);
+        Task<Application?> UpdateApplicationAsync(int id, Application application);
+        Task<bool> DeleteApplicationAsync(int id);
     }
 }

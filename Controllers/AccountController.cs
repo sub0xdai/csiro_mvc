@@ -8,12 +8,12 @@ namespace csiro_mvc.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly UserManager<User> _userManager;
-        private readonly SignInManager<User> _signInManager;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
 
         public AccountController(
-            UserManager<User> userManager,
-            SignInManager<User> signInManager)
+            UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -36,15 +36,15 @@ namespace csiro_mvc.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = new User { 
+                var user = new ApplicationUser { 
                     UserName = model.Email, 
                     Email = model.Email,
                     FirstName = "",  // These can be updated later
                     LastName = "",
+                    Department = "",
+                    Position = "",
                     Qualification = "",
-                    University = "",
-                    CoverLetter = "",
-                    CVPath = ""
+                    University = ""
                 };
                 var result = await _userManager.CreateAsync(user, model.Password);
 

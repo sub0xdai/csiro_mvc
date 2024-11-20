@@ -1,105 +1,156 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using csiro_mvc.Data;
 using csiro_mvc.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 
 namespace csiro_mvc.Repositories
 {
-    public class ApplicationRepository : GenericRepository<Application>, IApplicationRepository
+    public class ApplicationRepository : IApplicationRepository
     {
-        private readonly IConfiguration _configuration;
+        private readonly ApplicationDbContext _context;
 
-        public ApplicationRepository(ApplicationDbContext context, IConfiguration configuration) 
-            : base(context)
+        public ApplicationRepository(ApplicationDbContext context)
         {
-            _configuration = configuration;
+            _context = context;
         }
 
-        public async Task<IEnumerable<Application>> GetTopApplicationsByGPAAsync(int count)
+        public async Task<Application?> GetByIdAsync(int id)
         {
-            return await _dbSet
-                .Include(a => a.User)
-                .Include(a => a.Settings)
-                .OrderByDescending(a => a.GPA)
-                .Take(count)
-                .ToListAsync();
-        }
-
-        public async Task<IEnumerable<Application>> GetApplicationsByUserIdAsync(string userId)
-        {
-            return await _dbSet
-                .Where(a => a.UserId == userId)
-                .Include(a => a.User)
-                .Include(a => a.Settings)
-                .ToListAsync();
-        }
-
-        public async Task<IEnumerable<Application>> GetApplicationsByUniversityAsync(string university)
-        {
-            return await _dbSet
-                .Include(a => a.User)
-                .Include(a => a.Settings)
-                .Where(a => a.University.ToLower().Contains(university.ToLower()))
-                .ToListAsync();
-        }
-
-        public async Task<IEnumerable<Application>> GetApplicationsByCourseTypeAsync(CourseType courseType)
-        {
-            return await _dbSet
-                .Include(a => a.User)
-                .Include(a => a.Settings)
-                .Where(a => a.CourseType == courseType)
-                .ToListAsync();
-        }
-
-        public async Task<IEnumerable<Application>> GetApplicationsByStatusAsync(ApplicationStatus status)
-        {
-            return await _dbSet
-                .Include(a => a.User)
-                .Include(a => a.Settings)
-                .Where(a => a.Status == status)
-                .ToListAsync();
-        }
-
-        public override async Task<Application?> GetByIdAsync(int id)
-        {
-            return await _dbSet
+            return await _context.Applications
                 .Include(a => a.User)
                 .Include(a => a.Settings)
                 .FirstOrDefaultAsync(a => a.Id == id);
         }
 
-        public override async Task<IEnumerable<Application>> GetAllAsync()
+        public async Task<IEnumerable<Application>> GetAllAsync()
         {
-            return await _dbSet
+            return await _context.Applications
                 .Include(a => a.User)
                 .Include(a => a.Settings)
+                .OrderByDescending(a => a.CreatedAt)
                 .ToListAsync();
         }
 
-        public Task<double> GetConfiguredGPACutoffAsync()
+        public async Task<IEnumerable<Application>> SearchAsync(string searchTerm)
         {
-            var cutoffStr = _configuration["ApplicationSettings:GPACutoff"];
-            if (double.TryParse(cutoffStr, out double cutoff))
+            var query = _context.Applications
+                .Include(a => a.User)
+                .Include(a => a.Settings)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
             {
-                return Task.FromResult(cutoff);
+                searchTerm = searchTerm.ToLower();
+                query = query.Where(a => 
+                    a.Title.ToLower().Contains(searchTerm) || 
+                    a.Description.ToLower().Contains(searchTerm));
             }
-            return Task.FromResult(3.0); // Default value
+
+            return await query
+                .OrderByDescending(a => a.CreatedAt)
+                .ToListAsync();
         }
 
-        public async Task SetConfiguredGPACutoffAsync(double cutoff)
+        public async Task<Application> AddAsync(Application application)
         {
-            if (cutoff < 0 || cutoff > 4.0)
+            application.CreatedAt = DateTime.UtcNow;
+            application.Status = ApplicationStatus.Pending;
+
+            // Create ApplicationSettings if not provided
+            if (application.Settings == null)
             {
-                throw new ArgumentException("GPA cutoff must be between 0 and 4.0");
+                application.Settings = new ApplicationSettings
+                {
+                    NotificationsEnabled = true,
+                    Theme = "Light",
+                    Language = "English"
+                };
             }
-            // In a real application, this would update a settings table or configuration
-            // For now, we'll just validate the input
-            await Task.CompletedTask;
+
+            _context.Applications.Add(application);
+            await _context.SaveChangesAsync();
+            return application;
+        }
+
+        public async Task<Application?> UpdateAsync(int id, Application application)
+        {
+            var existingApplication = await _context.Applications
+                .Include(a => a.Settings)
+                .FirstOrDefaultAsync(a => a.Id == id);
+
+            if (existingApplication == null)
+                return null;
+
+            existingApplication.Title = application.Title;
+            existingApplication.Description = application.Description;
+            existingApplication.Status = application.Status;
+            existingApplication.UpdatedAt = DateTime.UtcNow;
+
+            if (application.Settings != null)
+            {
+                existingApplication.Settings.NotificationsEnabled = application.Settings.NotificationsEnabled;
+                existingApplication.Settings.Theme = application.Settings.Theme;
+                existingApplication.Settings.Language = application.Settings.Language;
+            }
+
+            await _context.SaveChangesAsync();
+            return existingApplication;
+        }
+
+        public async Task<bool> DeleteAsync(int id)
+        {
+            var application = await _context.Applications.FindAsync(id);
+            if (application == null)
+                return false;
+
+            _context.Applications.Remove(application);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<IEnumerable<Application>> GetByUserIdAsync(string userId)
+        {
+            return await _context.Applications
+                .Include(a => a.Settings)
+                .Where(a => a.UserId == userId)
+                .OrderByDescending(a => a.CreatedAt)
+                .ToListAsync();
+        }
+
+        public async Task<Application?> GetApplicationWithDetailsAsync(int id)
+        {
+            return await _context.Applications
+                .Include(a => a.User)
+                .Include(a => a.Settings)
+                .FirstOrDefaultAsync(a => a.Id == id);
+        }
+
+        public async Task<(IEnumerable<Application> Items, int TotalCount)> GetPaginatedApplicationsAsync(
+            int pageNumber, 
+            int pageSize, 
+            string? searchTerm = null)
+        {
+            var query = _context.Applications
+                .Include(a => a.User)
+                .Include(a => a.Settings)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                searchTerm = searchTerm.ToLower();
+                query = query.Where(a => 
+                    a.Title.ToLower().Contains(searchTerm) || 
+                    a.Description.ToLower().Contains(searchTerm) ||
+                    a.CourseType.ToLower().Contains(searchTerm));
+            }
+
+            var totalCount = await query.CountAsync();
+            var items = await query
+                .OrderByDescending(a => a.CreatedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (items, totalCount);
         }
     }
 }

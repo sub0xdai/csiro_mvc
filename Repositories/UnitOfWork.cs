@@ -1,48 +1,67 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using csiro_mvc.Data;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace csiro_mvc.Repositories
 {
     public class UnitOfWork : IUnitOfWork
     {
         private readonly ApplicationDbContext _context;
-        private readonly IConfiguration _configuration;
-        private IApplicationRepository _applications;
-        private bool _disposed;
+        private readonly IServiceProvider _serviceProvider;
+        private IApplicationRepository? _applications;
+        private IApplicationSettingsRepository? _applicationSettings;
+        private readonly Dictionary<Type, object> _repositories;
 
-        public UnitOfWork(ApplicationDbContext context, IConfiguration configuration)
+        public UnitOfWork(ApplicationDbContext context, IServiceProvider serviceProvider)
         {
             _context = context;
-            _configuration = configuration;
-            _applications = new ApplicationRepository(_context, _configuration);
+            _serviceProvider = serviceProvider;
+            _repositories = new Dictionary<Type, object>();
         }
 
-        public IApplicationRepository Applications => _applications;
-
-        public IGenericRepository<T> GetRepository<T>() where T : class
+        public IApplicationRepository Applications
         {
-            return new GenericRepository<T>(_context);
+            get
+            {
+                _applications ??= _serviceProvider.GetRequiredService<IApplicationRepository>();
+                return _applications;
+            }
         }
 
-        public async Task<int> SaveChangesAsync()
+        public IApplicationSettingsRepository ApplicationSettings
+        {
+            get
+            {
+                _applicationSettings ??= _serviceProvider.GetRequiredService<IApplicationSettingsRepository>();
+                return _applicationSettings;
+            }
+        }
+
+        public T GetRepository<T>() where T : class
+        {
+            var type = typeof(T);
+            if (!_repositories.ContainsKey(type))
+            {
+                _repositories[type] = _serviceProvider.GetRequiredService<T>();
+            }
+            return (T)_repositories[type];
+        }
+
+        public async Task<int> SaveAsync()
         {
             return await _context.SaveChangesAsync();
         }
 
-        protected virtual void Dispose(bool disposing)
+        public async Task<int> SaveChangesAsync()
         {
-            if (!_disposed && disposing)
-            {
-                _context.Dispose();
-            }
-            _disposed = true;
+            return await SaveAsync();
         }
 
         public void Dispose()
         {
-            Dispose(true);
+            _context.Dispose();
             GC.SuppressFinalize(this);
         }
     }

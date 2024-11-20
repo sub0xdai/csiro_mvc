@@ -5,7 +5,10 @@ namespace csiro_mvc.Repositories
     public interface IUnitOfWork : IDisposable
     {
         IApplicationRepository Applications { get; }
-        IGenericRepository<T> GetRepository<T>() where T : class;
+        IApplicationSettingsRepository ApplicationSettings { get; }
+        
+        T GetRepository<T>() where T : class;
+        Task<int> SaveAsync();
         Task<int> SaveChangesAsync();
     }
 }

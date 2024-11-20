@@ -45,29 +45,53 @@ namespace csiro_mvc.Repositories
             await _dbSet.AddRangeAsync(entities);
         }
 
-        public virtual async Task UpdateAsync(T entity)
+        public virtual async Task<bool> UpdateAsync(T entity)
         {
-            _dbSet.Attach(entity);
-            _context.Entry(entity).State = EntityState.Modified;
-            await Task.CompletedTask;
-        }
-
-        public virtual async Task DeleteAsync(T entity)
-        {
-            if (_context.Entry(entity).State == EntityState.Detached)
+            try
             {
-                _dbSet.Attach(entity);
+                _dbSet.Update(entity);
+                await _context.SaveChangesAsync();
+                return true;
             }
-            _dbSet.Remove(entity);
-            await Task.CompletedTask;
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
-        public virtual async Task DeleteAsync(int id)
+        public virtual async Task<bool> DeleteAsync(T entity)
         {
-            var entity = await GetByIdAsync(id);
-            if (entity != null)
+            try
             {
-                await DeleteAsync(entity);
+                if (_context.Entry(entity).State == EntityState.Detached)
+                {
+                    _dbSet.Attach(entity);
+                }
+                _dbSet.Remove(entity);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public virtual async Task<bool> DeleteAsync(int id)
+        {
+            try
+            {
+                var entity = await _dbSet.FindAsync(id);
+                if (entity == null)
+                    return false;
+
+                _dbSet.Remove(entity);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
             }
         }
     }

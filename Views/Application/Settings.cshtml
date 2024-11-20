@@ -38,17 +38,11 @@
                         <div class="mb-3">
                             <label asp-for="Language" class="form-label">Language</label>
                             <select asp-for="Language" class="form-select">
-                                <option value="en">English</option>
-                                <option value="es">Spanish</option>
-                                <option value="fr">French</option>
+                                <option value="English">English</option>
+                                <option value="Spanish">Spanish</option>
+                                <option value="French">French</option>
                             </select>
                             <span asp-validation-for="Language" class="text-danger"></span>
-                        </div>
-
-                        <div class="mb-3">
-                            <label asp-for="TimeZone" class="form-label">Time Zone</label>
-                            <select asp-for="TimeZone" class="form-select" id="timeZoneSelect"></select>
-                            <span asp-validation-for="TimeZone" class="text-danger"></span>
                         </div>
 
                         <div class="d-flex justify-content-between">
@@ -56,7 +50,7 @@
                                 <i class="bi bi-arrow-left"></i> Back to List
                             </a>
                             <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-save"></i> Save Settings
+                                <i class="bi bi-save"></i> Save Changes
                             </button>
                         </div>
                     </form>
@@ -68,50 +62,4 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-    
-    <script>
-        // Populate timezone dropdown
-        $(document).ready(function() {
-            const timeZones = moment.tz.names();
-            const select = document.getElementById('timeZoneSelect');
-            
-            timeZones.forEach(zone => {
-                const option = new Option(zone, zone);
-                select.add(option);
-            });
-
-            // Set current timezone if not already set
-            if (!$('#TimeZone').val()) {
-                $('#timeZoneSelect').val(moment.tz.guess());
-            }
-
-            // Form validation
-            $("#settingsForm").validate({
-                rules: {
-                    Theme: {
-                        required: true
-                    },
-                    Language: {
-                        required: true
-                    },
-                    TimeZone: {
-                        required: true
-                    }
-                },
-                messages: {
-                    Theme: {
-                        required: "Please select a theme"
-                    },
-                    Language: {
-                        required: "Please select a language"
-                    },
-                    TimeZone: {
-                        required: "Please select a time zone"
-                    }
-                },
-                errorElement: "span",
-                errorClass: "text-danger"
-            });
-        });
-    </script>
 }
