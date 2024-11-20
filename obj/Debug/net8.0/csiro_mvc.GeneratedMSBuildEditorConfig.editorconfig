@@ -22,6 +22,14 @@ build_property._RazorSourceGeneratorDebug =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQWNjb3VudC9BdXRoLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[/home/sub0x/1-projects/MVC/csiro_mvc/Views/Account/Login.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQWNjb3VudC9Mb2dpbi5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/sub0x/1-projects/MVC/csiro_mvc/Views/Account/Register.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQWNjb3VudC9SZWdpc3Rlci5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [/home/sub0x/1-projects/MVC/csiro_mvc/Views/Application/Apply.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXBwbGljYXRpb24vQXBwbHkuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
@@ -60,6 +68,22 @@ build_metadata.AdditionalFiles.CssScope =
 
 [/home/sub0x/1-projects/MVC/csiro_mvc/Views/Home/Programs.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSG9tZS9Qcm9ncmFtcy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/sub0x/1-projects/MVC/csiro_mvc/Views/Profile/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUHJvZmlsZS9JbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/sub0x/1-projects/MVC/csiro_mvc/Views/Role/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUm9sZS9DcmVhdGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/sub0x/1-projects/MVC/csiro_mvc/Views/Role/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUm9sZS9JbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/sub0x/1-projects/MVC/csiro_mvc/Views/Role/ManageUserRoles.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUm9sZS9NYW5hZ2VVc2VyUm9sZXMuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [/home/sub0x/1-projects/MVC/csiro_mvc/Views/Shared/Error.cshtml]

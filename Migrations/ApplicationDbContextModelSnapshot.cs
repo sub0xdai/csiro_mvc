@@ -200,7 +200,7 @@ namespace csiro_mvc.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Applications");
+                    b.ToTable("Applications", (string)null);
                 });
 
             modelBuilder.Entity("csiro_mvc.Models.ApplicationSettings", b =>
@@ -230,7 +230,7 @@ namespace csiro_mvc.Migrations
                     b.HasIndex("ApplicationId")
                         .IsUnique();
 
-                    b.ToTable("ApplicationSettings");
+                    b.ToTable("ApplicationSettings", (string)null);
                 });
 
             modelBuilder.Entity("csiro_mvc.Models.ApplicationUser", b =>
