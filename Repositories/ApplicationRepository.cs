@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using csiro_mvc.Data;
 using csiro_mvc.Models;
 using Microsoft.EntityFrameworkCore;
@@ -41,8 +45,9 @@ namespace csiro_mvc.Repositories
             {
                 searchTerm = searchTerm.ToLower();
                 query = query.Where(a => 
-                    a.Title.ToLower().Contains(searchTerm) || 
-                    a.Description.ToLower().Contains(searchTerm));
+                    EF.Functions.Like(a.Title.ToLower(), $"%{searchTerm}%") || 
+                    EF.Functions.Like(a.Description.ToLower(), $"%{searchTerm}%") ||
+                    EF.Functions.Like(a.CourseType.ToString().ToLower(), $"%{searchTerm}%"));
             }
 
             return await query
@@ -66,7 +71,7 @@ namespace csiro_mvc.Repositories
                 };
             }
 
-            _context.Applications.Add(application);
+            await _context.Applications.AddAsync(application);
             await _context.SaveChangesAsync();
             return application;
         }
@@ -92,6 +97,7 @@ namespace csiro_mvc.Repositories
                 existingApplication.Settings.Language = application.Settings.Language;
             }
 
+            _context.Applications.Update(existingApplication);
             await _context.SaveChangesAsync();
             return existingApplication;
         }
@@ -138,9 +144,9 @@ namespace csiro_mvc.Repositories
             {
                 searchTerm = searchTerm.ToLower();
                 query = query.Where(a => 
-                    a.Title.ToLower().Contains(searchTerm) || 
-                    a.Description.ToLower().Contains(searchTerm) ||
-                    a.CourseType.ToLower().Contains(searchTerm));
+                    EF.Functions.Like(a.Title.ToLower(), $"%{searchTerm}%") || 
+                    EF.Functions.Like(a.Description.ToLower(), $"%{searchTerm}%") ||
+                    EF.Functions.Like(a.CourseType.ToString().ToLower(), $"%{searchTerm}%"));
             }
 
             var totalCount = await query.CountAsync();

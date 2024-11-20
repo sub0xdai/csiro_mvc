@@ -4,6 +4,18 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace csiro_mvc.Models
 {
+    public enum Course
+    {
+        [Display(Name = "Master of Data Science")]
+        DataScience,
+        [Display(Name = "Master of Artificial Intelligence")]
+        ArtificialIntelligence,
+        [Display(Name = "Master of Information Technology")]
+        InformationTechnology,
+        [Display(Name = "Master of Science (Statistics)")]
+        Statistics
+    }
+
     public class Application
     {
         [Key]
@@ -14,15 +26,33 @@ namespace csiro_mvc.Models
 
         [Required]
         [StringLength(100)]
-        public string Title { get; set; } = null!;
+        public string Title { get; set; } = string.Empty;
 
         [Required]
-        [StringLength(500)]
-        public string Description { get; set; } = null!;
+        [StringLength(2000)]
+        public string Description { get; set; } = string.Empty;
 
         [Required]
-        [StringLength(50)]
-        public string CourseType { get; set; } = null!;
+        [Display(Name = "Course")]
+        public Course CourseType { get; set; }
+
+        [Required]
+        [Range(3.0, 4.0, ErrorMessage = "GPA must be between 3.0 and 4.0")]
+        public double GPA { get; set; }
+
+        [Required]
+        [Display(Name = "University")]
+        [StringLength(100)]
+        public string University { get; set; } = string.Empty;
+
+        [Required]
+        [Display(Name = "Cover Letter")]
+        [DataType(DataType.MultilineText)]
+        [StringLength(2000)]
+        public string CoverLetter { get; set; } = string.Empty;
+
+        [Display(Name = "CV")]
+        public string? CVPath { get; set; }
 
         public ApplicationStatus Status { get; set; }
 

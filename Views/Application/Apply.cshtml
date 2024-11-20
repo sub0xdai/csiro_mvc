@@ -1,20 +1,28 @@
-@model csiro_mvc.Models.Application
-
-@{
-    ViewData["Title"] = "Create Application";
-}
+@model csiro_mvc.Models.ApplicationForm
 
 <div class="container mt-4">
     <h2>Research Position Application</h2>
-    <form asp-action="Create" method="post" enctype="multipart/form-data">
+    <form asp-action="Apply" method="post" enctype="multipart/form-data">
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
         <div class="mb-3">
-            <label asp-for="CourseType" class="form-label"></label>
-            <select asp-for="CourseType" asp-items="Html.GetEnumSelectList<Course>()" class="form-select">
+            <label asp-for="Title" class="form-label"></label>
+            <input asp-for="Title" class="form-control" />
+            <span asp-validation-for="Title" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Description" class="form-label"></label>
+            <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="SelectedCourse" class="form-label"></label>
+            <select asp-for="SelectedCourse" asp-items="Html.GetEnumSelectList<Course>()" class="form-select">
                 <option value="">Select a Course</option>
             </select>
-            <span asp-validation-for="CourseType" class="text-danger"></span>
+            <span asp-validation-for="SelectedCourse" class="text-danger"></span>
         </div>
 
         <div class="mb-3">
@@ -36,8 +44,9 @@
         </div>
 
         <div class="mb-3">
-            <label asp-for="CVPath" class="form-label"></label>
+            <label asp-for="CVFile" class="form-label">CV</label>
             <input type="file" name="cvFile" class="form-control" accept=".pdf,.doc,.docx" />
+            <span asp-validation-for="CVFile" class="text-danger"></span>
         </div>
 
         <button type="submit" class="btn btn-primary">Submit Application</button>

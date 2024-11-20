@@ -121,5 +121,40 @@ Original goals remain to be implemented:
 - [ ] Implement email notifications and input validation
 - [ ] Create an application review interface
 
-### Notes
-Today's session focused on resolving technical debt and ensuring a stable foundation for the Identity system. While no new features were added, the codebase is now in a cleaner state for implementing the planned features in the next session.
+## Session 2024-11-21
+
+### What Was Done
+1. **Application Submission Form Implementation**
+   - Created and integrated the `ApplicationForm` model with necessary fields
+   - Implemented the Apply view with form fields and validation
+   - Added file upload functionality for CV documents
+   - Updated the ApplicationController with Apply actions
+   - Fixed package version conflicts (EF Core InMemory)
+
+2. **Repository and Service Layer Enhancements**
+   - Updated ApplicationRepository with improved search functionality
+   - Added string comparison fixes using EF.Functions.Like
+   - Implemented proper file handling for CV uploads
+
+### Features Completed
+- [x] Create application submission form
+- [x] Add file upload functionality for CVs
+- [x] Implement input validation for application form
+
+### Technical Improvements
+- Fixed package version conflicts by aligning all EF Core packages to version 8.0.0
+- Enhanced search functionality with case-insensitive comparisons
+- Improved file upload handling with proper directory creation
+
+### Next Steps
+Remaining goals to implement:
+- [ ] Implement user profile completion flow
+- [ ] Add role-based authorization
+- [ ] Set up an admin dashboard
+- [ ] Implement email notifications
+- [ ] Create an application review interface
+
+### Technical Debt
+- Add unit tests for new application submission functionality
+- Implement proper error handling for file uploads
+- Add input sanitization for file uploads
