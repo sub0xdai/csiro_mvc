@@ -1,0 +1,117 @@
+@model csiro_mvc.Models.ApplicationSettings
+
+@{
+    ViewData["Title"] = "Application Settings";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="card-title mb-0">@ViewData["Title"]</h2>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Settings" id="settingsForm">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="ApplicationId" />
+
+                        <div class="mb-3">
+                            <label asp-for="NotificationsEnabled" class="form-check-label">
+                                <input asp-for="NotificationsEnabled" type="checkbox" class="form-check-input" />
+                                Enable Notifications
+                            </label>
+                            <div class="form-text">Receive email notifications about application status changes.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Theme" class="form-label">Theme</label>
+                            <select asp-for="Theme" class="form-select">
+                                <option value="Light">Light</option>
+                                <option value="Dark">Dark</option>
+                                <option value="System">System Default</option>
+                            </select>
+                            <span asp-validation-for="Theme" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Language" class="form-label">Language</label>
+                            <select asp-for="Language" class="form-select">
+                                <option value="en">English</option>
+                                <option value="es">Spanish</option>
+                                <option value="fr">French</option>
+                            </select>
+                            <span asp-validation-for="Language" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="TimeZone" class="form-label">Time Zone</label>
+                            <select asp-for="TimeZone" class="form-select" id="timeZoneSelect"></select>
+                            <span asp-validation-for="TimeZone" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Back to List
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> Save Settings
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        // Populate timezone dropdown
+        $(document).ready(function() {
+            const timeZones = moment.tz.names();
+            const select = document.getElementById('timeZoneSelect');
+            
+            timeZones.forEach(zone => {
+                const option = new Option(zone, zone);
+                select.add(option);
+            });
+
+            // Set current timezone if not already set
+            if (!$('#TimeZone').val()) {
+                $('#timeZoneSelect').val(moment.tz.guess());
+            }
+
+            // Form validation
+            $("#settingsForm").validate({
+                rules: {
+                    Theme: {
+                        required: true
+                    },
+                    Language: {
+                        required: true
+                    },
+                    TimeZone: {
+                        required: true
+                    }
+                },
+                messages: {
+                    Theme: {
+                        required: "Please select a theme"
+                    },
+                    Language: {
+                        required: "Please select a language"
+                    },
+                    TimeZone: {
+                        required: "Please select a time zone"
+                    }
+                },
+                errorElement: "span",
+                errorClass: "text-danger"
+            });
+        });
+    </script>
+}

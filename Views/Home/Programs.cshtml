@@ -1,0 +1,42 @@
+@model IEnumerable<csiro_mvc.Models.ResearchProgram>
+
+@{
+    ViewData["Title"] = "Research Programs";
+}
+
+<div class="container mt-4">
+    <h1 class="text-center mb-5">CSIRO Research Programs</h1>
+    
+    <div class="row">
+        @foreach (var program in Model)
+        {
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">@program.Name</h5>
+                        <p class="card-text">@program.Description</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-primary">@program.OpenPositions Open Positions</span>
+                            <a href="@Url.Action("Create", "Application", new { programId = program.Id })" class="btn btn-outline-primary">Apply Now</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .card {
+        transition: transform 0.2s;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    .badge {
+        font-size: 0.9rem;
+        padding: 8px 12px;
+    }
+</style>

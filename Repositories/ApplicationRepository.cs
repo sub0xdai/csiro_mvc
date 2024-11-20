@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using csiro_mvc.Data;
 using csiro_mvc.Models;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +23,7 @@ namespace csiro_mvc.Repositories
         {
             return await _dbSet
                 .Include(a => a.User)
+                .Include(a => a.Settings)
                 .OrderByDescending(a => a.GPA)
                 .Take(count)
                 .ToListAsync();
@@ -27,8 +32,9 @@ namespace csiro_mvc.Repositories
         public async Task<IEnumerable<Application>> GetApplicationsByUserIdAsync(string userId)
         {
             return await _dbSet
-                .Include(a => a.User)
                 .Where(a => a.UserId == userId)
+                .Include(a => a.User)
+                .Include(a => a.Settings)
                 .ToListAsync();
         }
 
@@ -36,6 +42,7 @@ namespace csiro_mvc.Repositories
         {
             return await _dbSet
                 .Include(a => a.User)
+                .Include(a => a.Settings)
                 .Where(a => a.University.ToLower().Contains(university.ToLower()))
                 .ToListAsync();
         }
@@ -44,6 +51,7 @@ namespace csiro_mvc.Repositories
         {
             return await _dbSet
                 .Include(a => a.User)
+                .Include(a => a.Settings)
                 .Where(a => a.CourseType == courseType)
                 .ToListAsync();
         }
@@ -52,25 +60,46 @@ namespace csiro_mvc.Repositories
         {
             return await _dbSet
                 .Include(a => a.User)
+                .Include(a => a.Settings)
                 .Where(a => a.Status == status)
                 .ToListAsync();
         }
 
-        public async Task<double> GetConfiguredGPACutoffAsync()
+        public override async Task<Application?> GetByIdAsync(int id)
         {
-            // First try to get from database configuration table
-            // If not found, fall back to appsettings.json
-            return double.Parse(_configuration["ApplicationSettings:GPACutoff"] ?? "3.0");
+            return await _dbSet
+                .Include(a => a.User)
+                .Include(a => a.Settings)
+                .FirstOrDefaultAsync(a => a.Id == id);
+        }
+
+        public override async Task<IEnumerable<Application>> GetAllAsync()
+        {
+            return await _dbSet
+                .Include(a => a.User)
+                .Include(a => a.Settings)
+                .ToListAsync();
+        }
+
+        public Task<double> GetConfiguredGPACutoffAsync()
+        {
+            var cutoffStr = _configuration["ApplicationSettings:GPACutoff"];
+            if (double.TryParse(cutoffStr, out double cutoff))
+            {
+                return Task.FromResult(cutoff);
+            }
+            return Task.FromResult(3.0); // Default value
         }
 
         public async Task SetConfiguredGPACutoffAsync(double cutoff)
         {
-            // In a real application, this would be stored in a database configuration table
-            // For now, we'll just validate the input
-            if (cutoff < 3.0 || cutoff > 4.0)
+            if (cutoff < 0 || cutoff > 4.0)
             {
-                throw new ArgumentException("GPA cutoff must be between 3.0 and 4.0");
+                throw new ArgumentException("GPA cutoff must be between 0 and 4.0");
             }
+            // In a real application, this would update a settings table or configuration
+            // For now, we'll just validate the input
+            await Task.CompletedTask;
         }
     }
 }

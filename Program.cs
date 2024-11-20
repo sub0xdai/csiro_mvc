@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using csiro_mvc.Data;
 using csiro_mvc.Models;
 using csiro_mvc.Repositories;
+using csiro_mvc.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +21,10 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<IApplicationRepository, ApplicationRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+// Add Application Services
+builder.Services.AddScoped<IApplicationService, ApplicationService>();
+builder.Services.AddScoped<IApplicationSettingsService, ApplicationSettingsService>();
 
 // Add Identity
 builder.Services.AddIdentity<User, IdentityRole>(options => {

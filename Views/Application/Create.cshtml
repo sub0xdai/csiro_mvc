@@ -1,0 +1,100 @@
+@model csiro_mvc.Models.Application
+
+@{
+    ViewData["Title"] = "Create Application";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="card-title mb-0">@ViewData["Title"]</h2>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" id="createForm">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="Name" class="form-label"></label>
+                            <input asp-for="Name" class="form-control" />
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label"></label>
+                            <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Status" class="form-label"></label>
+                            <select asp-for="Status" class="form-select">
+                                <option value="">Select Status</option>
+                                <option value="Draft">Draft</option>
+                                <option value="Submitted">Submitted</option>
+                                <option value="InReview">In Review</option>
+                                <option value="Approved">Approved</option>
+                                <option value="Rejected">Rejected</option>
+                            </select>
+                            <span asp-validation-for="Status" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Back to List
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> Create
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        // Client-side validation
+        $(document).ready(function () {
+            $("#createForm").validate({
+                rules: {
+                    Name: {
+                        required: true,
+                        minlength: 3,
+                        maxlength: 100
+                    },
+                    Description: {
+                        required: true,
+                        minlength: 10,
+                        maxlength: 500
+                    },
+                    Status: {
+                        required: true
+                    }
+                },
+                messages: {
+                    Name: {
+                        required: "Please enter a name for your application",
+                        minlength: "Name must be at least 3 characters long",
+                        maxlength: "Name cannot exceed 100 characters"
+                    },
+                    Description: {
+                        required: "Please provide a description",
+                        minlength: "Description must be at least 10 characters long",
+                        maxlength: "Description cannot exceed 500 characters"
+                    },
+                    Status: {
+                        required: "Please select a status"
+                    }
+                },
+                errorElement: "span",
+                errorClass: "text-danger"
+            });
+        });
+    </script>
+}

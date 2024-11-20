@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -8,10 +9,20 @@ namespace csiro_mvc.Models
         [Key]
         public int Id { get; set; }
 
+        [Required(ErrorMessage = "Application name is required")]
+        [StringLength(100, MinimumLength = 3, ErrorMessage = "Name must be between 3 and 100 characters")]
+        [Display(Name = "Application Name")]
+        public string Name { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Description is required")]
+        [StringLength(500, MinimumLength = 10, ErrorMessage = "Description must be between 10 and 500 characters")]
+        [Display(Name = "Description")]
+        public string Description { get; set; } = string.Empty;
+
         [Required]
         [ForeignKey("User")]
-        public string UserId { get; set; }
-        public User User { get; set; }
+        public string UserId { get; set; } = string.Empty;
+        public User? User { get; set; }
 
         [Required]
         [Display(Name = "Course Type")]
@@ -23,23 +34,35 @@ namespace csiro_mvc.Models
 
         [Required]
         [Display(Name = "University")]
-        public string University { get; set; }
+        public string University { get; set; } = string.Empty;
 
         [Required]
         [Display(Name = "Cover Letter")]
-        public string CoverLetter { get; set; }
+        public string CoverLetter { get; set; } = string.Empty;
 
         [Display(Name = "CV File Path")]
         public string? CVFilePath { get; set; }
 
         [Display(Name = "Application Date")]
-        public DateTime ApplicationDate { get; set; }
+        public DateTime ApplicationDate { get; set; } = DateTime.UtcNow;
 
-        [Display(Name = "Application Status")]
-        public ApplicationStatus Status { get; set; } = ApplicationStatus.Pending;
+        [Required(ErrorMessage = "Status is required")]
+        [Display(Name = "Status")]
+        public ApplicationStatus Status { get; set; } = ApplicationStatus.UnderReview;
+
+        [Display(Name = "Created Date")]
+        [DataType(DataType.DateTime)]
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        [Display(Name = "Last Modified")]
+        [DataType(DataType.DateTime)]
+        public DateTime? LastModified { get; set; }
 
         public bool IsInvitedForInterview { get; set; } = false;
         public DateTime? InterviewInvitationDate { get; set; }
+
+        // Navigation property
+        public virtual ApplicationSettings? Settings { get; set; }
     }
 
     public enum CourseType

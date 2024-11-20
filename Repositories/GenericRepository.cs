@@ -1,4 +1,8 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 using csiro_mvc.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -30,9 +34,10 @@ namespace csiro_mvc.Repositories
             return await _dbSet.Where(expression).ToListAsync();
         }
 
-        public virtual async Task AddAsync(T entity)
+        public virtual async Task<T> AddAsync(T entity)
         {
             await _dbSet.AddAsync(entity);
+            return entity;
         }
 
         public virtual async Task AddRangeAsync(IEnumerable<T> entities)
@@ -40,19 +45,30 @@ namespace csiro_mvc.Repositories
             await _dbSet.AddRangeAsync(entities);
         }
 
-        public virtual void Update(T entity)
+        public virtual async Task UpdateAsync(T entity)
         {
-            _dbSet.Update(entity);
+            _dbSet.Attach(entity);
+            _context.Entry(entity).State = EntityState.Modified;
+            await Task.CompletedTask;
         }
 
-        public virtual void Remove(T entity)
+        public virtual async Task DeleteAsync(T entity)
         {
+            if (_context.Entry(entity).State == EntityState.Detached)
+            {
+                _dbSet.Attach(entity);
+            }
             _dbSet.Remove(entity);
+            await Task.CompletedTask;
         }
 
-        public virtual void RemoveRange(IEnumerable<T> entities)
+        public virtual async Task DeleteAsync(int id)
         {
-            _dbSet.RemoveRange(entities);
+            var entity = await GetByIdAsync(id);
+            if (entity != null)
+            {
+                await DeleteAsync(entity);
+            }
         }
     }
 }
