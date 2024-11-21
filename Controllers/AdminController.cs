@@ -100,14 +100,16 @@ namespace csiro_mvc.Controllers
         {
             try
             {
+                _logger.LogInformation("Attempting to send invitation for application {ApplicationId}", applicationId);
                 await _adminService.SendInterviewInvitationAsync(applicationId);
                 TempData["SuccessMessage"] = "Interview invitation sent successfully.";
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error sending interview invitation");
-                TempData["ErrorMessage"] = "Failed to send interview invitation.";
+                _logger.LogError(ex, "Error sending interview invitation for application {ApplicationId}. Error: {Error}", 
+                    applicationId, ex.ToString());
+                TempData["ErrorMessage"] = $"Failed to send interview invitation: {ex.Message}";
                 return RedirectToAction(nameof(Index));
             }
         }

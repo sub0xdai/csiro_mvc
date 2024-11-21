@@ -22,6 +22,7 @@ try
         .MinimumLevel.Debug()
         .MinimumLevel.Override("Microsoft", LogEventLevel.Debug)
         .MinimumLevel.Override("System", LogEventLevel.Debug)
+        .MinimumLevel.Override("System.Net.Mail", LogEventLevel.Debug)
         .Enrich.FromLogContext()
         .WriteTo.Console(
             outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")

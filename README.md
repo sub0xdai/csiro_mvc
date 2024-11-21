@@ -1,99 +1,102 @@
 # CSIRO Research Application Portal
 
-## Project Overview
-A web application for CSIRO to manage applications for research positions in Machine Learning and Data Science, focusing on COVID-19 vaccination causality research in Australia.
+## Overview
+A web application built for CSIRO to streamline the management of research position applications in Machine Learning and Data Science, with a focus on COVID-19 vaccination causality research in Australia.
 
-## Core Requirements Analysis
+## Features
 
-### User Authentication & Authorization
-- [x] User Registration System
-- [x] Role-based Authorization (Admin/Applicant)
-- [x] Secure Password Encryption
-- [x] Session Management
+### For Applicants
+- User registration and profile management
+- Application submission for research positions
+- Educational background and experience documentation
+- Document upload capability (CV, cover letter)
+- Real-time application status tracking
+- Automated email notifications
 
-### Applicant Features
-1. Profile Management
-   - [ ] Contact Details
-   - [ ] Educational Background
-   - [ ] Profile Editing Capability
+### For Administrators
+- Comprehensive application review dashboard
+- Advanced sorting and filtering capabilities
+- Automated candidate shortlisting
+- Interview scheduling management
+- Email communication system
+- Application status management
 
-2. Application Submission
-   - [ ] Course Selection (Dropdown)
-     * Master of Data Science
-     * Master of Artificial Intelligence
-     * Master of Information Technology
-     * Master of Science (Statistics)
-   - [ ] GPA Entry (Server-side validation)
-     * Must be ≥ 3.0
-     * Double/Float validation
-   - [ ] University Selection
-     * Limited to top 100 global universities
-   - [ ] Cover Letter Submission
-   - [ ] CV Upload (Optional)
+## Technical Stack
+- **Backend**: ASP.NET Core MVC (.NET 8.0)
+- **Database**: PostgreSQL
+- **Authentication**: ASP.NET Core Identity
+- **Frontend**: Bootstrap 5, jQuery
+- **Email**: Development simulation with production SMTP support
 
-### Administrator Features
-1. Application Management
-   - [ ] View All Applications
-   - [ ] Sort Applications by GPA
-   - [ ] Search Functionality
-   - [ ] Configurable GPA Cutoff
+## Getting Started
 
-2. Interview Process
-   - [ ] Automated Email System
-   - [ ] Template-based Messages
-   - [ ] Top 10 Candidate Selection
+### Prerequisites
+- .NET 8.0 SDK
+- PostgreSQL 15 or higher
+- Visual Studio 2022 or VS Code
 
-### Security Requirements
-1. Data Protection
-   - [ ] Password Encryption
-   - [ ] Input Sanitization
-   - [ ] Server-side Validation
+### Installation
+1. Clone the repository
+```bash
+git clone [repository-url]
+cd csiro_mvc
+```
 
-2. Access Control
-   - [ ] Role-based Access
-   - [ ] Session Management
-   - [ ] Secure Routes
+2. Update database connection string in `appsettings.json`
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Host=localhost;Database=csiro_mvc;Username=your_username;Password=your_password"
+  }
+}
+```
 
-### Technical Stack
-- Backend: ASP.NET Core MVC (C#)
-- Database: PostgreSQL
-- Authentication: ASP.NET Core Identity
-- Frontend: Bootstrap, jQuery
-- Email: SMTP Integration
+3. Apply database migrations
+```bash
+dotnet ef database update
+```
 
-## Project Deliverables
-1. [ ] UML & ER Diagrams Documentation
-2. [x] MVC Implementation
-3. [ ] Test Cases Documentation
-4. [ ] Database SQL File
+### Running the Application
+1. Start the application:
+```bash
+dotnet run --launch-profile http
+```
 
-## Development Progress
-- [x] Basic Project Setup
-- [x] Database Configuration
-- [x] User Authentication System
-- [ ] Application Form
-- [ ] Admin Dashboard
-- [ ] Email Integration
-- [ ] Testing & Documentation
+2. Access the application at:
+- http://localhost:5002
 
-## Testing Requirements
-- [ ] Unit Tests
-- [ ] Integration Tests
-- [ ] User Acceptance Testing
-- [ ] Security Testing
+## Email Testing in Development
 
-## Security Measures
-- [x] Password Encryption
-- [ ] Input Validation
-- [ ] XSS Prevention
-- [ ] CSRF Protection
-- [ ] SQL Injection Prevention
+During development, the application simulates email sending by saving email content as HTML files:
 
-## Installation & Setup
-[To be added]
+1. All emails are saved in the `EmailSimulation` directory
+2. Files are named with timestamps (e.g., `email_20240101_120000.html`)
+3. Each file contains:
+   - Email metadata (recipient, subject, timestamp)
+   - Formatted email content
+   - Styling for visualization
+
+## Production Deployment
+
+For production deployment:
+1. Update email configuration in `appsettings.Production.json`
+2. Set environment variable: `ASPNETCORE_ENVIRONMENT=Production`
+3. Configure your SMTP server details
+
+## Security Features
+- Role-based authorization
+- Secure password hashing
+- Input validation and sanitization
+- CSRF protection
+- XSS prevention
+- SQL injection protection
 
 ## Contributing
-This is a group assessment project (2+ members). Each member's contributions should be clearly documented and demonstrable.
+This project is part of a group assessment. All contributions should be:
+- Properly documented
+- Tested thoroughly
+- Reviewed by team members
+- Compliant with the existing code style
 
 ## License
-[To be added]
+[License details to be added]

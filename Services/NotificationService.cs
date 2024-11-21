@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using csiro_mvc.Models;
 using Microsoft.AspNetCore.Hosting;
+using System.IO;
 
 namespace csiro_mvc.Services
 {
@@ -52,48 +53,57 @@ namespace csiro_mvc.Services
             try
             {
                 _logger.LogInformation("Attempting to send interview invitation to {Email}", application.User.Email);
-                _logger.LogInformation("Environment is Development: {IsDevelopment}", _environment.IsDevelopment());
 
-                // Use MailHog for development, real SMTP for production
-                var smtpServer = _environment.IsDevelopment() ? "localhost" : _configuration["EmailSettings:SmtpServer"];
-                var smtpPort = _environment.IsDevelopment() ? 1025 : int.Parse(_configuration["EmailSettings:SmtpPort"] ?? "587");
-                
-                _logger.LogInformation("Using SMTP Server: {Server}, Port: {Port}", smtpServer, smtpPort);
-
-                using var client = new SmtpClient
+                if (_environment.IsDevelopment())
                 {
-                    Host = smtpServer,
-                    Port = smtpPort,
-                    EnableSsl = false, // Disable SSL for MailHog
-                    DeliveryMethod = SmtpDeliveryMethod.Network,
-                    UseDefaultCredentials = false // Don't use any credentials for MailHog
-                };
+                    _logger.LogInformation("Development environment detected. Simulating email send.");
+                    await SimulateEmailSendAsync(application.User.Email, emailSubject, emailBody);
+                    _logger.LogInformation("Email simulation completed successfully");
+                    return;
+                }
 
-                _logger.LogInformation("SMTP Client configured with SSL: {EnableSsl}, DeliveryMethod: {DeliveryMethod}", 
-                    client.EnableSsl, client.DeliveryMethod);
-
-                var fromEmail = _configuration["EmailSettings:FromEmail"] ?? "noreply@csiro.au";
-                _logger.LogInformation("Sending from email: {FromEmail}", fromEmail);
-
-                var mailMessage = new MailMessage
-                {
-                    From = new MailAddress(fromEmail),
-                    Subject = emailSubject,
-                    Body = emailBody,
-                    IsBodyHtml = true
-                };
-                mailMessage.To.Add(application.User.Email);
-
-                _logger.LogInformation("Attempting to send email...");
-                await client.SendMailAsync(mailMessage);
-                _logger.LogInformation("Interview invitation sent successfully to {Email}", application.User.Email);
+                // Production email sending logic would go here
+                throw new NotImplementedException("Production email sending is not yet implemented");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error sending interview invitation to {Email}. Error details: {Message}, Stack: {StackTrace}", 
-                    application.User.Email, ex.Message, ex.StackTrace);
-                throw;
+                _logger.LogError(ex, "Error sending interview invitation to {Email}", application.User.Email);
+                throw new Exception($"Failed to send email: {ex.Message}", ex);
             }
+        }
+
+        private async Task SimulateEmailSendAsync(string toEmail, string subject, string body)
+        {
+            // Create a directory to store simulated emails if it doesn't exist
+            var emailDir = Path.Combine(_environment.ContentRootPath, "EmailSimulation");
+            Directory.CreateDirectory(emailDir);
+
+            // Create a file with the email content
+            var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+            var fileName = $"email_{timestamp}.html";
+            var filePath = Path.Combine(emailDir, fileName);
+
+            var emailContent = $@"
+                <html>
+                <head>
+                    <style>
+                        .email-metadata {{ background: #f0f0f0; padding: 10px; margin-bottom: 20px; }}
+                    </style>
+                </head>
+                <body>
+                    <div class='email-metadata'>
+                        <p><strong>To:</strong> {toEmail}</p>
+                        <p><strong>Subject:</strong> {subject}</p>
+                        <p><strong>Date:</strong> {DateTime.Now}</p>
+                    </div>
+                    <div class='email-body'>
+                        {body}
+                    </div>
+                </body>
+                </html>";
+
+            await File.WriteAllTextAsync(filePath, emailContent);
+            _logger.LogInformation("Simulated email saved to: {FilePath}", filePath);
         }
     }
 }
