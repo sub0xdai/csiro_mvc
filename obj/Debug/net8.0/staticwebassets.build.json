@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "Nd+94u2fHG/wMHjcusFpAA9CcjcDGAwXCQaCOLed79A=",
+  "Hash": "WA9EhilRQOOAwq2/AKOkax+DuyQLXJPGX3CQAk4Pbi4=",
   "Source": "csiro_mvc",
   "BasePath": "_content/csiro_mvc",
   "Mode": "Default",
@@ -1195,12 +1195,12 @@
       "OriginalItemSpec": "wwwroot/lib/jquery/LICENSE.txt"
     },
     {
-      "Identity": "/home/sub0x/1-projects/MVC/csiro_mvc/wwwroot/uploads/71d679a8-318b-43f0-bcf3-c34f645f60fb_resumeIT.docx",
+      "Identity": "/home/sub0x/1-projects/MVC/csiro_mvc/wwwroot/uploads/217da484-67ec-4d32-99a7-3a571ab19c9c_resume.docx",
       "SourceId": "csiro_mvc",
       "SourceType": "Discovered",
       "ContentRoot": "/home/sub0x/1-projects/MVC/csiro_mvc/wwwroot/",
       "BasePath": "_content/csiro_mvc",
-      "RelativePath": "uploads/71d679a8-318b-43f0-bcf3-c34f645f60fb_resumeIT.docx",
+      "RelativePath": "uploads/217da484-67ec-4d32-99a7-3a571ab19c9c_resume.docx",
       "AssetKind": "All",
       "AssetMode": "All",
       "AssetRole": "Primary",
@@ -1211,7 +1211,45 @@
       "AssetTraitValue": "",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot/uploads/71d679a8-318b-43f0-bcf3-c34f645f60fb_resumeIT.docx"
+      "OriginalItemSpec": "wwwroot/uploads/217da484-67ec-4d32-99a7-3a571ab19c9c_resume.docx"
+    },
+    {
+      "Identity": "/home/sub0x/1-projects/MVC/csiro_mvc/wwwroot/uploads/68e7058f-d89e-46f5-ac3c-35ec0afe7764_resumeIT.docx",
+      "SourceId": "csiro_mvc",
+      "SourceType": "Discovered",
+      "ContentRoot": "/home/sub0x/1-projects/MVC/csiro_mvc/wwwroot/",
+      "BasePath": "_content/csiro_mvc",
+      "RelativePath": "uploads/68e7058f-d89e-46f5-ac3c-35ec0afe7764_resumeIT.docx",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/uploads/68e7058f-d89e-46f5-ac3c-35ec0afe7764_resumeIT.docx"
+    },
+    {
+      "Identity": "/home/sub0x/1-projects/MVC/csiro_mvc/wwwroot/uploads/cb32bae8-0034-4d65-8c18-99911ccd7391_resumeIT.docx",
+      "SourceId": "csiro_mvc",
+      "SourceType": "Discovered",
+      "ContentRoot": "/home/sub0x/1-projects/MVC/csiro_mvc/wwwroot/",
+      "BasePath": "_content/csiro_mvc",
+      "RelativePath": "uploads/cb32bae8-0034-4d65-8c18-99911ccd7391_resumeIT.docx",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/uploads/cb32bae8-0034-4d65-8c18-99911ccd7391_resumeIT.docx"
     }
   ]
 }

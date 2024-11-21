@@ -245,8 +245,16 @@
       "PackagePath": "staticwebassets/lib/jquery/dist/jquery.min.map"
     },
     {
-      "Id": "/home/sub0x/1-projects/MVC/csiro_mvc/wwwroot/uploads/71d679a8-318b-43f0-bcf3-c34f645f60fb_resumeIT.docx",
-      "PackagePath": "staticwebassets/uploads/71d679a8-318b-43f0-bcf3-c34f645f60fb_resumeIT.docx"
+      "Id": "/home/sub0x/1-projects/MVC/csiro_mvc/wwwroot/uploads/217da484-67ec-4d32-99a7-3a571ab19c9c_resume.docx",
+      "PackagePath": "staticwebassets/uploads/217da484-67ec-4d32-99a7-3a571ab19c9c_resume.docx"
+    },
+    {
+      "Id": "/home/sub0x/1-projects/MVC/csiro_mvc/wwwroot/uploads/68e7058f-d89e-46f5-ac3c-35ec0afe7764_resumeIT.docx",
+      "PackagePath": "staticwebassets/uploads/68e7058f-d89e-46f5-ac3c-35ec0afe7764_resumeIT.docx"
+    },
+    {
+      "Id": "/home/sub0x/1-projects/MVC/csiro_mvc/wwwroot/uploads/cb32bae8-0034-4d65-8c18-99911ccd7391_resumeIT.docx",
+      "PackagePath": "staticwebassets/uploads/cb32bae8-0034-4d65-8c18-99911ccd7391_resumeIT.docx"
     },
     {
       "Id": "obj/Debug/net8.0/staticwebassets/msbuild.build.csiro_mvc.props",

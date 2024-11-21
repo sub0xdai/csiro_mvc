@@ -1,219 +1,365 @@
-using System.Security.Claims;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using csiro_mvc.Models;
+using csiro_mvc.Models.ViewModels;
 using csiro_mvc.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Hosting;
-using System.IO;
+using System.Security.Claims;
 using Serilog;
-using ILogger = Serilog.ILogger;
+using System.Diagnostics;
 
 namespace csiro_mvc.Controllers
 {
     [Authorize]
+    [Route("[controller]")]
     public class ApplicationController : Controller
     {
         private readonly IApplicationService _applicationService;
-        private readonly IWebHostEnvironment _webHostEnvironment;
-        private readonly ILogger _logger;
+        private readonly IResearchProgramService _researchProgramService;
+        private readonly IUniversityService _universityService;
+        private readonly ILogger<ApplicationController> _logger;
 
         public ApplicationController(
             IApplicationService applicationService,
-            IWebHostEnvironment webHostEnvironment)
+            IResearchProgramService researchProgramService,
+            IUniversityService universityService,
+            ILogger<ApplicationController> logger)
         {
             _applicationService = applicationService;
-            _webHostEnvironment = webHostEnvironment;
-            _logger = Log.ForContext<ApplicationController>();
+            _researchProgramService = researchProgramService;
+            _universityService = universityService;
+            _logger = logger;
         }
 
-        public IActionResult Apply()
+        [HttpGet]
+        [Route("")]
+        [Route("Index")]
+        public async Task<IActionResult> Index()
         {
-            return View(new ApplicationForm());
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            try
+            {
+                var applications = await _applicationService.GetApplicationsAsync(userId);
+                return View(applications);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving applications");
+                return View("Error");
+            }
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Apply(ApplicationForm form)
+        [HttpGet]
+        [Route("Apply")]
+        public async Task<IActionResult> Apply()
         {
             try
             {
-                _logger.Information("Starting application submission process");
-
-                if (!ModelState.IsValid)
-                {
-                    var errors = ModelState.Values
-                        .SelectMany(v => v.Errors)
-                        .Select(e => e.ErrorMessage)
-                        .ToList();
-                    _logger.Warning("Model state is invalid: {Errors}", string.Join("; ", errors));
-                    
-                    foreach (var error in errors)
-                    {
-                        ModelState.AddModelError("", error);
-                    }
-                    return View(form);
-                }
-
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                if (string.IsNullOrEmpty(userId))
-                {
-                    _logger.Error("User ID is null or empty");
-                    ModelState.AddModelError("", "User not authenticated. Please log in again.");
-                    return View(form);
-                }
-
-                _logger.Information("Creating application for user: {UserId}", userId);
-
-                var application = new Application
-                {
-                    UserId = userId,
-                    Title = form.Title,
-                    CourseType = form.SelectedCourse,
-                    GPA = form.GPA,
-                    University = form.University,
-                    CoverLetter = form.CoverLetter,
-                    Status = ApplicationStatus.Pending,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                };
-
-                if (form.CVFile != null && form.CVFile.Length > 0)
-                {
-                    _logger.Information("Processing CV file: {FileName}", form.CVFile.FileName);
-                    var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads");
-                    Directory.CreateDirectory(uploadsFolder);
-                    
-                    var uniqueFileName = Guid.NewGuid().ToString() + "_" + form.CVFile.FileName;
-                    var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-                    
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await form.CVFile.CopyToAsync(stream);
-                    }
-                    
-                    application.CVPath = uniqueFileName;
-                    _logger.Information("CV file saved successfully: {FilePath}", filePath);
-                }
-
-                _logger.Information("Calling CreateApplicationAsync");
-                await _applicationService.CreateApplicationAsync(application);
-                _logger.Information("Application created successfully with ID: {ApplicationId}", application.Id);
+                var programs = await _researchProgramService.GetAllProgramsAsync();
+                var universities = _universityService.GetTop100Universities();
                 
-                TempData["SuccessMessage"] = "Your application has been submitted successfully!";
-                _logger.Information("Redirecting to Success page");
+                var form = new ApplicationForm
+                {
+                    AvailablePrograms = programs.Select(p => new SelectListItem
+                    {
+                        Value = p.Id.ToString(),
+                        Text = p.Title
+                    }).ToList(),
+                    Universities = universities.Select(u => new SelectListItem
+                    {
+                        Value = u.Name,
+                        Text = $"{u.Name} ({u.Country})"
+                    }).ToList()
+                };
+                return View(form);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading application form");
+                return View("Error");
+            }
+        }
+
+        [HttpPost]
+        [Route("Submit")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Submit(ApplicationForm form)
+        {
+            if (!ModelState.IsValid)
+            {
+                _logger.LogWarning("ModelState is invalid. Errors: {Errors}", 
+                    string.Join(", ", ModelState.Values
+                        .SelectMany(v => v.Errors)
+                        .Select(e => e.ErrorMessage)));
+                
+                var programs = await _researchProgramService.GetAllProgramsAsync();
+                var universities = _universityService.GetTop100Universities();
+                form.AvailablePrograms = programs.Select(p => new SelectListItem
+                {
+                    Value = p.Id.ToString(),
+                    Text = p.Title
+                }).ToList();
+                form.Universities = universities.Select(u => new SelectListItem
+                {
+                    Value = u.Name,
+                    Text = $"{u.Name} ({u.Country})"
+                }).ToList();
+                return View("Apply", form);
+            }
+
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            try
+            {
+                if (!int.TryParse(form.ProgramTitle, out int programId))
+                {
+                    ModelState.AddModelError("ProgramTitle", "Invalid program selection.");
+                    var programs = await _researchProgramService.GetAllProgramsAsync();
+                    var universities = _universityService.GetTop100Universities();
+                    form.AvailablePrograms = programs.Select(p => new SelectListItem
+                    {
+                        Value = p.Id.ToString(),
+                        Text = p.Title
+                    }).ToList();
+                    form.Universities = universities.Select(u => new SelectListItem
+                    {
+                        Value = u.Name,
+                        Text = $"{u.Name} ({u.Country})"
+                    }).ToList();
+                    return View("Apply", form);
+                }
+
+                var application = await _applicationService.CreateApplicationAsync(userId, programId, form);
+                TempData["SuccessMessage"] = "Your application has been submitted successfully! You can track its status on your dashboard.";
                 return RedirectToAction(nameof(Success), new { id = application.Id });
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Error occurred while processing application submission");
-                ModelState.AddModelError("", $"An error occurred while saving your application: {ex.Message}");
-                return View(form);
+                _logger.LogError(ex, "Error submitting application");
+                ModelState.AddModelError("", "An error occurred while submitting your application. Please try again.");
+                var programs = await _researchProgramService.GetAllProgramsAsync();
+                var universities = _universityService.GetTop100Universities();
+                form.AvailablePrograms = programs.Select(p => new SelectListItem
+                {
+                    Value = p.Id.ToString(),
+                    Text = p.Title
+                }).ToList();
+                form.Universities = universities.Select(u => new SelectListItem
+                {
+                    Value = u.Name,
+                    Text = $"{u.Name} ({u.Country})"
+                }).ToList();
+                return View("Apply", form);
             }
         }
 
-        public async Task<IActionResult> Success(int id)
+        [HttpGet("{id}")]
+        public async Task<IActionResult> Details(int id)
         {
-            _logger.Information("Loading success page for application ID: {ApplicationId}", id);
-            var application = await _applicationService.GetApplicationByIdAsync(id);
-            
-            if (application == null)
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
             {
-                _logger.Warning("Application not found: {ApplicationId}", id);
-                return NotFound();
+                return Unauthorized();
             }
 
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (application.UserId != userId)
+            try
             {
-                _logger.Warning("Unauthorized access attempt to application: {ApplicationId} by user: {UserId}", id, userId);
-                return Forbid();
-            }
+                var application = await _applicationService.GetApplicationByIdAsync(id);
+                
+                if (application == null || application.UserId != userId)
+                {
+                    return NotFound();
+                }
 
-            return View(application);
+                return View(application);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving application details");
+                return View("Error");
+            }
         }
 
+        [HttpGet("{id}/edit")]
         public async Task<IActionResult> Edit(int id)
         {
-            var application = await _applicationService.GetApplicationByIdAsync(id);
-            if (application == null)
+            try
             {
-                return NotFound();
-            }
+                var application = await _applicationService.GetApplicationByIdAsync(id);
+                if (application == null)
+                    return NotFound();
 
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (application.UserId != userId)
+                var programs = await _researchProgramService.GetAllProgramsAsync();
+                var universities = _universityService.GetTop100Universities();
+                var form = new ApplicationForm
+                {
+                    AvailablePrograms = programs.Select(p => new SelectListItem
+                    {
+                        Value = p.Id.ToString(),
+                        Text = p.Title
+                    }).ToList(),
+                    Universities = universities.Select(u => new SelectListItem
+                    {
+                        Value = u.Name,
+                        Text = $"{u.Name} ({u.Country})"
+                    }).ToList()
+                };
+                return View(form);
+            }
+            catch (Exception ex)
             {
-                return Forbid();
+                _logger.LogError(ex, "Error retrieving application for editing");
+                return View("Error");
             }
-
-            return View(application);
         }
 
-        [HttpPost]
+        [HttpPost("{id}/edit")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Application application)
         {
             if (id != application.Id)
             {
-                return NotFound();
+                return BadRequest();
             }
 
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (application.UserId != userId)
+            if (!ModelState.IsValid)
             {
-                return Forbid();
+                return View(application);
             }
 
-            if (ModelState.IsValid)
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
             {
-                application.UpdatedAt = DateTime.UtcNow;
-                await _applicationService.UpdateApplicationAsync(application);
+                return Unauthorized();
+            }
+
+            try
+            {
+                await _applicationService.UpdateApplicationAsync(id, application);
+                TempData["SuccessMessage"] = "Application updated successfully!";
                 return RedirectToAction(nameof(Index));
             }
-            return View(application);
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating application");
+                ModelState.AddModelError("", "An error occurred while updating your application. Please try again.");
+                return View(application);
+            }
         }
 
+        [HttpGet("{id}/delete")]
         public async Task<IActionResult> Delete(int id)
         {
-            var application = await _applicationService.GetApplicationByIdAsync(id);
-            if (application == null)
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
             {
-                return NotFound();
+                return Unauthorized();
             }
 
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (application.UserId != userId)
+            try
             {
-                return Forbid();
-            }
+                var application = await _applicationService.GetApplicationByIdAsync(id);
+                
+                if (application == null || application.UserId != userId)
+                {
+                    return NotFound();
+                }
 
-            await _applicationService.DeleteApplicationAsync(id);
-            return RedirectToAction(nameof(Index));
+                return View(application);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving application for deletion");
+                return View("Error");
+            }
         }
 
-        public async Task<IActionResult> Details(int id)
+        [HttpPost("{id}/delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var application = await _applicationService.GetApplicationByIdAsync(id);
-            if (application == null)
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
             {
-                return NotFound();
+                return Unauthorized();
             }
 
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (application.UserId != userId)
+            try
             {
-                return Forbid();
+                await _applicationService.DeleteApplicationAsync(id);
+                TempData["SuccessMessage"] = "Application deleted successfully!";
+                return RedirectToAction(nameof(Index));
             }
-
-            return View(application);
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting application");
+                return View("Error");
+            }
         }
 
-        public async Task<IActionResult> Index()
+        [HttpGet("activity")]
+        public async Task<IActionResult> GetActivity()
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            _logger.Information("Loading applications for user: {UserId}", userId);
-            var applications = await _applicationService.GetApplicationsAsync(userId);
-            return View(applications);
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            try
+            {
+                var activities = await _applicationService.GetStatusChangesAsync(userId);
+                return Ok(activities);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving application activity");
+                return StatusCode(500, "An error occurred while retrieving activity");
+            }
+        }
+
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult Error()
+        {
+            return View(new ErrorViewModel { RequestId = HttpContext.TraceIdentifier });
+        }
+
+        [HttpGet]
+        [Route("Success/{id}")]
+        public async Task<IActionResult> Success(int id)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            try
+            {
+                var application = await _applicationService.GetApplicationByIdAsync(id);
+                
+                if (application == null || application.UserId != userId)
+                {
+                    return NotFound();
+                }
+
+                return View(application);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving application for success page");
+                return View("Error");
+            }
         }
     }
 }

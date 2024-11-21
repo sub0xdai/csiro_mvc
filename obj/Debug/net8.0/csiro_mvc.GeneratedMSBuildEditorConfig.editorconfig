@@ -30,6 +30,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQWNjb3VudC9SZWdpc3Rlci5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
+[/home/sub0x/1-projects/MVC/csiro_mvc/Views/Admin/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQWRtaW4vSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
 [/home/sub0x/1-projects/MVC/csiro_mvc/Views/Application/Apply.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXBwbGljYXRpb24vQXBwbHkuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
@@ -44,6 +48,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [/home/sub0x/1-projects/MVC/csiro_mvc/Views/Application/Edit.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXBwbGljYXRpb24vRWRpdC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/sub0x/1-projects/MVC/csiro_mvc/Views/Application/Error.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXBwbGljYXRpb24vRXJyb3IuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [/home/sub0x/1-projects/MVC/csiro_mvc/Views/Application/Index.cshtml]
@@ -64,6 +72,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [/home/sub0x/1-projects/MVC/csiro_mvc/Views/Home/Dashboard.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSG9tZS9EYXNoYm9hcmQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/sub0x/1-projects/MVC/csiro_mvc/Views/Home/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSG9tZS9EZXRhaWxzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [/home/sub0x/1-projects/MVC/csiro_mvc/Views/Home/Index.cshtml]

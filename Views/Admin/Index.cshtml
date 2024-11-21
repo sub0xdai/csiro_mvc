@@ -1,0 +1,119 @@
+@model csiro_mvc.Models.ViewModels.AdminDashboardViewModel
+
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="container mt-4">
+    <h2>Admin Dashboard</h2>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>GPA Cutoff Settings</h5>
+        </div>
+        <div class="card-body">
+            <form asp-action="UpdateGPACutoff" method="post">
+                @Html.AntiForgeryToken()
+                <div class="form-group">
+                    <label>Minimum GPA Requirement</label>
+                    <input type="number" step="0.1" class="form-control" name="minimumGPA" value="@Model.MinGPARequirement" />
+                </div>
+                <button type="submit" class="btn btn-primary mt-2">Update GPA Cutoff</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h5>Applications</h5>
+        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <form asp-action="Index" method="get" class="form-inline">
+                        <div class="input-group">
+                            <input type="text" name="searchString" value="@Model.SearchString" class="form-control" placeholder="Search applications..." />
+                            <button type="submit" class="btn btn-outline-secondary">Search</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="col-md-6">
+                    <div class="dropdown float-end">
+                        <button class="btn btn-secondary dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown">
+                            Sort By
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="@Url.Action("Index", new { sortOrder = "gpa_desc", searchString = Model.SearchString })">GPA (High to Low)</a></li>
+                            <li><a class="dropdown-item" href="@Url.Action("Index", new { sortOrder = "gpa", searchString = Model.SearchString })">GPA (Low to High)</a></li>
+                            <li><a class="dropdown-item" href="@Url.Action("Index", new { sortOrder = "date_desc", searchString = Model.SearchString })">Date (Newest First)</a></li>
+                            <li><a class="dropdown-item" href="@Url.Action("Index", new { sortOrder = "date", searchString = Model.SearchString })">Date (Oldest First)</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Research Program</th>
+                            <th>Applicant</th>
+                            <th>University</th>
+                            <th>GPA</th>
+                            <th>Status</th>
+                            <th>Created At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var application in Model.Applications)
+                        {
+                            <tr>
+                                <td>@application.ResearchProgram.Title</td>
+                                <td>@($"{application.User.FirstName} {application.User.LastName}")</td>
+                                <td>@application.User.University</td>
+                                <td>@application.GPA</td>
+                                <td>
+                                    <span class="badge bg-@(application.Status.ToString().ToLower() == "pending" ? "warning" : 
+                                                         application.Status.ToString().ToLower() == "approved" ? "success" : 
+                                                         application.Status.ToString().ToLower() == "rejected" ? "danger" : "secondary")">
+                                        @application.Status
+                                    </span>
+                                </td>
+                                <td>@application.CreatedAt.ToString("MMM dd, yyyy")</td>
+                                <td>
+                                    <form asp-action="SendInvitation" method="post" style="display: inline;">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="applicationId" value="@application.Id" />
+                                        <button type="submit" class="btn btn-sm btn-primary">Send Invitation</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Initialize tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl)
+            });
+        });
+    </script>
+}

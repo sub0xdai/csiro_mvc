@@ -5,19 +5,34 @@
 }
 
 <div class="container mt-4">
-    <h1 class="text-center mb-5">CSIRO Research Programs</h1>
-    
+    <h2 class="mb-4">Research Programs</h2>
+
     <div class="row">
         @foreach (var program in Model)
         {
             <div class="col-md-6 mb-4">
                 <div class="card h-100">
                     <div class="card-body">
-                        <h5 class="card-title">@program.Name</h5>
+                        <h5 class="card-title">@program.Title</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">@program.Department</h6>
                         <p class="card-text">@program.Description</p>
+                        <div class="mt-3">
+                            <p class="mb-1"><strong>Supervisor:</strong> @program.Supervisor</p>
+                            <p class="mb-1"><strong>Funding Amount:</strong> $@program.FundingAmount.ToString("N0")</p>
+                            <p class="mb-1"><strong>Duration:</strong> @program.StartDate.ToString("MMM yyyy") - @program.EndDate.ToString("MMM yyyy")</p>
+                        </div>
+                    </div>
+                    <div class="card-footer">
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="badge bg-primary">@program.OpenPositions Open Positions</span>
-                            <a href="@Url.Action("Create", "Application", new { programId = program.Id })" class="btn btn-outline-primary">Apply Now</a>
+                            @if (program.IsActive)
+                            {
+                                <a asp-controller="Application" asp-action="Apply" asp-route-programId="@program.Id" class="btn btn-primary">Apply Now</a>
+                            }
+                            else
+                            {
+                                <button class="btn btn-secondary" disabled>Applications Closed</button>
+                            }
                         </div>
                     </div>
                 </div>

@@ -12,7 +12,7 @@ using csiro_mvc.Data;
 namespace csiro_mvc.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241120105638_InitialCreate")]
+    [Migration("20241121081600_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -179,15 +179,17 @@ namespace csiro_mvc.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)");
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP AT TIME ZONE 'UTC'");
 
                     b.Property<double>("GPA")
                         .HasColumnType("double precision");
+
+                    b.Property<string>("ProgramTitle")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("ResearchProgramId")
+                        .HasColumnType("integer");
 
                     b.Property<int>("Status")
                         .ValueGeneratedOnAdd()
@@ -214,6 +216,8 @@ namespace csiro_mvc.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CreatedAt");
+
+                    b.HasIndex("ResearchProgramId");
 
                     b.HasIndex("UserId");
 
@@ -248,6 +252,39 @@ namespace csiro_mvc.Migrations
                         .IsUnique();
 
                     b.ToTable("ApplicationSettings");
+                });
+
+            modelBuilder.Entity("csiro_mvc.Models.ApplicationStatusHistory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ApplicationId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("ChangedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP AT TIME ZONE 'UTC'");
+
+                    b.Property<string>("ChangedBy")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("NewStatus")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("OldStatus")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApplicationId");
+
+                    b.ToTable("ApplicationStatusHistories");
                 });
 
             modelBuilder.Entity("csiro_mvc.Models.ApplicationUser", b =>
@@ -354,6 +391,163 @@ namespace csiro_mvc.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("csiro_mvc.Models.ResearchProgram", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP AT TIME ZONE 'UTC'");
+
+                    b.Property<string>("Department")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("FundingAmount")
+                        .HasColumnType("numeric");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("OpenPositions")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Supervisor")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ResearchPrograms");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Department = "Computer Science",
+                            Description = "Research in advanced machine learning techniques focusing on deep learning and neural networks.",
+                            EndDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            FundingAmount = 75000m,
+                            IsActive = true,
+                            OpenPositions = 2,
+                            StartDate = new DateTime(2024, 2, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Supervisor = "Dr. John Smith",
+                            Title = "Advanced Machine Learning Research",
+                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Department = "Physics",
+                            Description = "Exploring practical applications of quantum computing in cryptography and optimization.",
+                            EndDate = new DateTime(2027, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            FundingAmount = 100000m,
+                            IsActive = true,
+                            OpenPositions = 3,
+                            StartDate = new DateTime(2024, 3, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Supervisor = "Dr. Sarah Johnson",
+                            Title = "Quantum Computing Applications",
+                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Department = "Engineering",
+                            Description = "Research in renewable energy systems and smart grid technologies.",
+                            EndDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            FundingAmount = 120000m,
+                            IsActive = true,
+                            OpenPositions = 4,
+                            StartDate = new DateTime(2024, 2, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Supervisor = "Dr. Michael Brown",
+                            Title = "Sustainable Energy Systems",
+                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Department = "Health Sciences",
+                            Description = "Applying data science techniques to improve healthcare outcomes and patient care.",
+                            EndDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            FundingAmount = 90000m,
+                            IsActive = true,
+                            OpenPositions = 2,
+                            StartDate = new DateTime(2024, 4, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Supervisor = "Dr. Emily Chen",
+                            Title = "Data Science for Healthcare",
+                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = 5,
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Department = "Philosophy",
+                            Description = "Research on ethical implications and governance of AI systems.",
+                            EndDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            FundingAmount = 80000m,
+                            IsActive = true,
+                            OpenPositions = 3,
+                            StartDate = new DateTime(2024, 3, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Supervisor = "Dr. David Wilson",
+                            Title = "Artificial Intelligence Ethics",
+                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                        });
+                });
+
+            modelBuilder.Entity("csiro_mvc.Models.University", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Country")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Ranking")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Universities");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -407,11 +601,19 @@ namespace csiro_mvc.Migrations
 
             modelBuilder.Entity("csiro_mvc.Models.Application", b =>
                 {
+                    b.HasOne("csiro_mvc.Models.ResearchProgram", "ResearchProgram")
+                        .WithMany("Applications")
+                        .HasForeignKey("ResearchProgramId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("csiro_mvc.Models.ApplicationUser", "User")
                         .WithMany("Applications")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("ResearchProgram");
 
                     b.Navigation("User");
                 });
@@ -427,12 +629,30 @@ namespace csiro_mvc.Migrations
                     b.Navigation("Application");
                 });
 
+            modelBuilder.Entity("csiro_mvc.Models.ApplicationStatusHistory", b =>
+                {
+                    b.HasOne("csiro_mvc.Models.Application", "Application")
+                        .WithMany("StatusHistory")
+                        .HasForeignKey("ApplicationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Application");
+                });
+
             modelBuilder.Entity("csiro_mvc.Models.Application", b =>
                 {
                     b.Navigation("Settings");
+
+                    b.Navigation("StatusHistory");
                 });
 
             modelBuilder.Entity("csiro_mvc.Models.ApplicationUser", b =>
+                {
+                    b.Navigation("Applications");
+                });
+
+            modelBuilder.Entity("csiro_mvc.Models.ResearchProgram", b =>
                 {
                     b.Navigation("Applications");
                 });

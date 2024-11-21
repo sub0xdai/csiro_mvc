@@ -75,26 +75,26 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">Recent Research Programs</h5>
-                    @if (Model.RecentPrograms != null && Model.RecentPrograms.Any())
+                    <h5 class="card-title">Available Research Programs</h5>
+                    @if (Model.AvailablePrograms != null && Model.AvailablePrograms.Any())
                     {
                         <div class="list-group">
-                            @foreach (var program in Model.RecentPrograms)
+                            @foreach (var program in Model.AvailablePrograms)
                             {
-                                <a asp-controller="Programs" asp-action="Details" asp-route-id="@program.Id" 
+                                <a asp-controller="Home" asp-action="Details" asp-route-id="@program.Id" 
                                    class="list-group-item list-group-item-action">
-                                    <div class="d-flex w-100 justify-content-between">
-                                        <h6 class="mb-1">@program.Name</h6>
-                                        <small>@program.OpenPositions positions</small>
+                                    <div class="d-flex w-100 justify-content-between align-items-start mb-2">
+                                        <h6 class="mb-0">@program.Title</h6>
+                                        <span class="badge bg-primary rounded-pill">@program.OpenPositions positions</span>
                                     </div>
-                                    <p class="mb-1">@program.Description</p>
+                                    <p class="mb-1 text-truncate">@program.Description</p>
                                 </a>
                             }
                         </div>
                     }
                     else
                     {
-                        <p>No recent programs available.</p>
+                        <p class="text-muted">No research programs available at the moment.</p>
                     }
                 </div>
             </div>

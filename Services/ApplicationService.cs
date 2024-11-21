@@ -1,426 +1,298 @@
+using System;
 using System.Collections.Generic;
-using System.Security.Claims;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using csiro_mvc.Data;
 using csiro_mvc.Models;
 using csiro_mvc.Models.ViewModels;
-using csiro_mvc.Repositories;
 using Microsoft.EntityFrameworkCore;
-using Serilog;
-using ILogger = Serilog.ILogger;
+using Microsoft.Extensions.Logging;
 
 namespace csiro_mvc.Services
 {
     public class ApplicationService : IApplicationService
     {
         private readonly ApplicationDbContext _context;
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly ILogger _logger;
+        private readonly ILogger<ApplicationService> _logger;
 
-        public ApplicationService(ApplicationDbContext context, IUnitOfWork unitOfWork)
+        public ApplicationService(
+            ApplicationDbContext context,
+            ILogger<ApplicationService> logger)
         {
             _context = context;
-            _unitOfWork = unitOfWork;
-            _logger = Log.ForContext<ApplicationService>();
+            _logger = logger;
         }
 
-        public async Task<IEnumerable<Application>> GetAllApplicationsAsync()
+        public async Task<List<Application>> GetApplicationsAsync(string userId)
         {
             try
             {
-                _logger.Information("Getting all applications");
-                return await _unitOfWork.Applications.GetAllAsync();
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, "Error getting all applications");
-                throw;
-            }
-        }
-
-        public async Task<IEnumerable<Application>> GetApplicationsAsync(string userId)
-        {
-            try
-            {
-                _logger.Information("Getting applications for user: {UserId}", userId);
-                var applications = await _context.Applications
+                return await _context.Applications
+                    .Include(a => a.StatusHistory)
                     .Where(a => a.UserId == userId)
                     .OrderByDescending(a => a.CreatedAt)
                     .ToListAsync();
-                
-                _logger.Information("Found {Count} applications for user", applications.Count);
-                return applications;
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Error getting applications for user: {UserId}", userId);
+                _logger.LogError(ex, "Error retrieving applications for user {UserId}", userId);
                 throw;
             }
         }
 
         public async Task<Application?> GetApplicationByIdAsync(int id)
         {
-            try
-            {
-                _logger.Information("Getting application by ID: {Id}", id);
-                return await _context.Applications
-                    .Include(a => a.StatusHistory)
-                    .FirstOrDefaultAsync(a => a.Id == id);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, "Error getting application by ID: {Id}", id);
-                throw;
-            }
+            return await _context.Applications
+                .Include(a => a.ResearchProgram)
+                .Include(a => a.StatusHistory)
+                .FirstOrDefaultAsync(a => a.Id == id);
         }
 
-        public async Task<Application?> GetApplicationByIdAsyncDbContext(int id)
+        public async Task<Application> CreateApplicationAsync(string userId, int programId, ApplicationForm form)
         {
             try
             {
-                _logger.Information("Getting application by ID: {Id} using DbContext", id);
-                return await _context.Applications.FindAsync(id);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, "Error getting application by ID: {Id} using DbContext", id);
-                throw;
-            }
-        }
-
-        public async Task CreateApplicationAsync(Application application)
-        {
-            try
-            {
-                _logger.Information("Starting CreateApplicationAsync for user: {UserId}", application.UserId);
-
-                if (application == null)
+                var researchProgram = await _context.ResearchPrograms.FindAsync(programId);
+                if (researchProgram == null)
                 {
-                    _logger.Error("Application object is null");
-                    throw new ArgumentNullException(nameof(application));
+                    throw new InvalidOperationException($"Research program with ID {programId} not found.");
                 }
 
-                application.CreatedAt = DateTime.UtcNow;
-                application.UpdatedAt = DateTime.UtcNow;
-                
-                _logger.Information("Adding application to context");
-                _context.Applications.Add(application);
-                
-                _logger.Information("Saving changes to database");
-                await _context.SaveChangesAsync();
-                
-                _logger.Information("Application saved successfully with ID: {ApplicationId}", application.Id);
-                
-                // Track initial status
-                await TrackStatusChangeAsync(application, null, application.UserId);
-                
-                _logger.Information("Status change tracked successfully");
-            }
-            catch (DbUpdateException ex)
-            {
-                _logger.Error(ex, "Database error occurred while creating application");
-                throw;
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, "Error creating application");
-                throw;
-            }
-        }
-
-        public async Task<Application> CreateApplicationAsyncUnitOfWork(Application application)
-        {
-            try
-            {
-                _logger.Information("Starting CreateApplicationAsyncUnitOfWork for user: {UserId}", application.UserId);
-                var createdApplication = await _unitOfWork.Applications.AddAsync(application);
-                await _unitOfWork.SaveAsync();
-                _logger.Information("Application saved successfully with ID: {ApplicationId}", createdApplication.Id);
-                return createdApplication;
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, "Error creating application");
-                throw;
-            }
-        }
-
-        public async Task UpdateApplicationAsync(Application application)
-        {
-            try
-            {
-                _logger.Information("Starting UpdateApplicationAsync for application ID: {Id}", application.Id);
-
-                if (application == null)
+                string? cvFilePath = null;
+                if (form.CVFile != null && form.CVFile.Length > 0)
                 {
-                    _logger.Error("Application object is null");
-                    throw new ArgumentNullException(nameof(application));
-                }
+                    var uploadsDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+                    Directory.CreateDirectory(uploadsDir);
 
-                application.UpdatedAt = DateTime.UtcNow;
-                
-                _logger.Information("Updating application in context");
-                _context.Entry(application).State = EntityState.Modified;
-                
-                _logger.Information("Saving changes to database");
-                await _context.SaveChangesAsync();
-                
-                _logger.Information("Application updated successfully with ID: {ApplicationId}", application.Id);
-            }
-            catch (DbUpdateException ex)
-            {
-                _logger.Error(ex, "Database error occurred while updating application");
-                throw;
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, "Error updating application");
-                throw;
-            }
-        }
+                    var uniqueFileName = $"{Guid.NewGuid()}_{Path.GetFileName(form.CVFile.FileName)}";
+                    cvFilePath = Path.Combine("uploads", uniqueFileName);
+                    var fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", cvFilePath);
 
-        public async Task<Application?> UpdateApplicationAsyncUnitOfWork(int id, Application application)
-        {
-            try
-            {
-                _logger.Information("Starting UpdateApplicationAsyncUnitOfWork for application ID: {Id}", id);
-                return await _unitOfWork.Applications.UpdateAsync(id, application);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, "Error updating application with id: {Id}", id);
-                throw;
-            }
-        }
-
-        public async Task DeleteApplicationAsync(int id)
-        {
-            try
-            {
-                _logger.Information("Deleting application with ID: {Id}", id);
-                var application = await _context.Applications.FindAsync(id);
-                if (application != null)
-                {
-                    _logger.Information("Removing application from context");
-                    _context.Applications.Remove(application);
-                    
-                    _logger.Information("Saving changes to database");
-                    await _context.SaveChangesAsync();
-                    
-                    _logger.Information("Application deleted successfully with ID: {ApplicationId}", id);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, "Error deleting application with id: {Id}", id);
-                throw;
-            }
-        }
-
-        public async Task<bool> DeleteApplicationAsyncUnitOfWork(int id)
-        {
-            try
-            {
-                _logger.Information("Deleting application with ID: {Id} using UnitOfWork", id);
-                return await _unitOfWork.Applications.DeleteAsync(id);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, "Error deleting application with id: {Id} using UnitOfWork", id);
-                throw;
-            }
-        }
-
-        public async Task<IEnumerable<Application>> GetApplicationsByUserIdAsync(string userId)
-        {
-            try
-            {
-                _logger.Information("Getting applications for user: {UserId}", userId);
-                return await _unitOfWork.Applications.GetByUserIdAsync(userId);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, "Error getting applications for user: {UserId}", userId);
-                throw;
-            }
-        }
-
-        public async Task<IEnumerable<Application>> SearchApplicationsAsync(string searchTerm)
-        {
-            try
-            {
-                _logger.Information("Searching applications with search term: {SearchTerm}", searchTerm);
-                return await _unitOfWork.Applications.SearchAsync(searchTerm);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, "Error searching applications with search term: {SearchTerm}", searchTerm);
-                throw;
-            }
-        }
-
-        public async Task<IEnumerable<Application>> SearchApplicationsAsync(string userId, string searchTerm)
-        {
-            try
-            {
-                _logger.Information("Searching applications for user: {UserId} with search term: {SearchTerm}", userId, searchTerm);
-                var query = _context.Applications.Where(a => a.UserId == userId);
-
-                if (!string.IsNullOrWhiteSpace(searchTerm))
-                {
-                    searchTerm = searchTerm.ToLower();
-                    query = query.Where(a => 
-                        a.University.ToLower().Contains(searchTerm) ||
-                        a.CourseType.ToString().ToLower().Contains(searchTerm) ||
-                        a.CoverLetter.ToLower().Contains(searchTerm)
-                    );
-                }
-
-                return await query
-                    .OrderByDescending(a => a.CreatedAt)
-                    .ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, "Error searching applications for user: {UserId} with search term: {SearchTerm}", userId, searchTerm);
-                throw;
-            }
-        }
-
-        public async Task<List<ResearchProgram>> GetRecentProgramsAsync(int count = 5)
-        {
-            try
-            {
-                _logger.Information("Getting recent research programs");
-                return await _context.ResearchPrograms
-                    .OrderByDescending(p => p.Id)
-                    .Take(count)
-                    .ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, "Error getting recent research programs");
-                throw;
-            }
-        }
-
-        public async Task<List<ResearchProgram>> GetAllProgramsAsync()
-        {
-            try
-            {
-                _logger.Information("Getting all research programs");
-                return await _context.ResearchPrograms
-                    .OrderBy(p => p.Name)
-                    .ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, "Error getting all research programs");
-                throw;
-            }
-        }
-
-        public async Task<ResearchProgram> GetProgramByIdAsync(int id)
-        {
-            try
-            {
-                _logger.Information("Getting research program by ID: {Id}", id);
-                return await _context.ResearchPrograms
-                    .FirstOrDefaultAsync(p => p.Id == id);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, "Error getting research program by ID: {Id}", id);
-                throw;
-            }
-        }
-
-        public async Task<int> GetUserApplicationsCountAsync(string userId)
-        {
-            try
-            {
-                _logger.Information("Getting user applications count for user: {UserId}", userId);
-                return await _context.Applications
-                    .CountAsync(a => a.UserId == userId);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, "Error getting user applications count for user: {UserId}", userId);
-                throw;
-            }
-        }
-
-        public async Task<int> GetTotalApplicationsCountAsync(string userId)
-        {
-            try
-            {
-                _logger.Information("Getting total applications count for user: {UserId}", userId);
-                return await _context.Applications
-                    .CountAsync(a => a.UserId == userId);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, "Error getting total applications count for user: {UserId}", userId);
-                throw;
-            }
-        }
-
-        public async Task<List<ApplicationStatusChange>> GetRecentStatusChangesAsync(string userId)
-        {
-            try
-            {
-                _logger.Information("Getting recent status changes for user: {UserId}", userId);
-                var recentChanges = await _context.ApplicationStatusHistory
-                    .Include(h => h.Application)
-                    .Where(h => h.Application.UserId == userId)
-                    .OrderByDescending(h => h.ChangedAt)
-                    .Take(5)
-                    .Select(h => new ApplicationStatusChange
+                    using (var stream = new FileStream(fullPath, FileMode.Create))
                     {
-                        ApplicationId = h.ApplicationId,
-                        ApplicationTitle = h.Application.Title,
-                        OldStatus = h.OldStatus,
-                        NewStatus = h.NewStatus,
-                        ChangedAt = h.ChangedAt
-                    })
-                    .ToListAsync();
+                        await form.CVFile.CopyToAsync(stream);
+                    }
+                }
 
-                return recentChanges;
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, "Error getting recent status changes for user: {UserId}", userId);
-                throw;
-            }
-        }
+                var application = new Application
+                {
+                    UserId = userId,
+                    ResearchProgramId = programId,
+                    Title = researchProgram.Title,
+                    ProgramTitle = researchProgram.Title,
+                    CourseType = form.CourseType,
+                    University = form.University,
+                    GPA = form.GPA,
+                    CoverLetter = form.CoverLetter,
+                    CVFilePath = cvFilePath,
+                    Status = ApplicationStatus.Pending,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
 
-        public async Task TrackStatusChangeAsync(Application application, ApplicationStatus? oldStatus, string userId)
-        {
-            try
-            {
-                _logger.Information("Tracking status change for application ID: {Id}", application.Id);
                 var statusHistory = new ApplicationStatusHistory
                 {
                     ApplicationId = application.Id,
-                    OldStatus = oldStatus ?? ApplicationStatus.Draft,
-                    NewStatus = application.Status,
+                    Status = ApplicationStatus.Pending,
+                    OldStatus = ApplicationStatus.Draft,
                     ChangedAt = DateTime.UtcNow,
-                    ChangedBy = userId
+                    ChangedBy = userId,
+                    Comment = "Application submitted"
                 };
 
-                _logger.Information("Adding status history to context");
-                _context.ApplicationStatusHistory.Add(statusHistory);
-                
-                _logger.Information("Saving changes to database");
+                application.StatusHistory = new List<ApplicationStatusHistory> { statusHistory };
+
+                _context.Applications.Add(application);
                 await _context.SaveChangesAsync();
-                
-                _logger.Information("Status change tracked successfully");
+
+                return application;
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Error tracking status change for application ID: {Id}", application.Id);
+                _logger.LogError(ex, "Error creating application");
                 throw;
             }
+        }
+
+        public async Task<Application?> UpdateApplicationAsync(int id, Application application)
+        {
+            try
+            {
+                var existingApplication = await _context.Applications.FindAsync(id);
+                if (existingApplication == null)
+                {
+                    throw new KeyNotFoundException($"Application with ID {id} not found");
+                }
+
+                existingApplication.UpdatedAt = DateTime.UtcNow;
+                existingApplication.Status = application.Status;
+                existingApplication.ProgramTitle = application.ProgramTitle;
+                existingApplication.CourseType = application.CourseType;
+
+                await _context.SaveChangesAsync();
+                return existingApplication;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating application: {Id}", id);
+                throw;
+            }
+        }
+
+        public async Task<bool> DeleteApplicationAsync(int id)
+        {
+            try
+            {
+                var application = await _context.Applications.FindAsync(id);
+                if (application == null)
+                {
+                    return false;
+                }
+
+                _context.Applications.Remove(application);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting application: {Id}", id);
+                throw;
+            }
+        }
+
+        public async Task<List<Application>> SearchApplicationsAsync(string searchTerm)
+        {
+            try
+            {
+                _logger.LogInformation("Searching applications with term: {SearchTerm}", searchTerm);
+                return await _context.Applications
+                    .Include(a => a.StatusHistory)
+                    .Where(a => a.ProgramTitle.Contains(searchTerm) ||
+                               a.CourseType.Contains(searchTerm))
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error searching applications with term: {SearchTerm}", searchTerm);
+                throw;
+            }
+        }
+
+        public async Task<int> GetTotalApplicationsCountAsync()
+        {
+            return await _context.Applications.CountAsync();
+        }
+
+        public async Task<List<ApplicationStatusChangeViewModel>> GetRecentStatusChangesAsync(string userId)
+        {
+            var recentChanges = await _context.Set<ApplicationStatusHistory>()
+                .Include(sh => sh.Application)
+                .Where(sh => sh.Application != null && sh.Application.UserId == userId)
+                .OrderByDescending(sh => sh.ChangedAt)
+                .Take(10)
+                .Select(sh => new ApplicationStatusChangeViewModel
+                {
+                    ApplicationId = sh.ApplicationId,
+                    Title = sh.Application != null ? sh.Application.ProgramTitle : string.Empty,
+                    OldStatus = sh.OldStatus,
+                    NewStatus = sh.Status,
+                    ChangedAt = sh.ChangedAt
+                })
+                .ToListAsync();
+
+            return recentChanges;
+        }
+
+        public async Task TrackStatusChangeAsync(int applicationId, ApplicationStatus? oldStatus, ApplicationStatus newStatus, string userId)
+        {
+            var statusHistory = new ApplicationStatusHistory
+            {
+                ApplicationId = applicationId,
+                OldStatus = oldStatus ?? ApplicationStatus.Draft,
+                Status = newStatus,
+                ChangedBy = userId,
+                ChangedAt = DateTime.UtcNow
+            };
+
+            _context.Set<ApplicationStatusHistory>().Add(statusHistory);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<ApplicationStatusChangeViewModel>> GetStatusChangesAsync(string userId)
+        {
+            try
+            {
+                var applications = await _context.Applications
+                    .Include(a => a.StatusHistory)
+                    .Where(a => a.UserId == userId)
+                    .ToListAsync();
+
+                var allStatusChanges = applications
+                    .SelectMany(a => a.StatusHistory ?? new List<ApplicationStatusHistory>())
+                    .OrderByDescending(h => h.ChangedAt)
+                    .Select(h => new ApplicationStatusChangeViewModel
+                    {
+                        ApplicationId = h.ApplicationId,
+                        ApplicationTitle = applications.FirstOrDefault(a => a.Id == h.ApplicationId)?.Title ?? string.Empty,
+                        Title = applications.FirstOrDefault(a => a.Id == h.ApplicationId)?.Title ?? string.Empty,
+                        OldStatus = h.OldStatus,
+                        NewStatus = h.Status,
+                        ChangedAt = h.ChangedAt
+                    })
+                    .ToList();
+
+                return allStatusChanges;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving status changes for user {UserId}", userId);
+                throw;
+            }
+        }
+
+        public async Task<bool> UpdateStatusAsync(int applicationId, ApplicationStatus newStatus, string userId, string? comment = null)
+        {
+            var application = await _context.Applications
+                .Include(a => a.StatusHistory)
+                .FirstOrDefaultAsync(a => a.Id == applicationId);
+
+            if (application == null)
+                return false;
+
+            var oldStatus = application.Status;
+            application.Status = newStatus;
+
+            var statusHistory = new ApplicationStatusHistory
+            {
+                ApplicationId = applicationId,
+                OldStatus = oldStatus,
+                Status = newStatus,
+                ChangedAt = DateTime.UtcNow,
+                ChangedBy = userId,
+                Comment = comment
+            };
+
+            application.StatusHistory ??= new List<ApplicationStatusHistory>();
+            application.StatusHistory.Add(statusHistory);
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating application status");
+                return false;
+            }
+        }
+
+        public async Task<List<Application>> GetAllApplicationsAsync()
+        {
+            return await _context.Applications
+                .Include(a => a.StatusHistory)
+                .ToListAsync();
         }
     }
 }

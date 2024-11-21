@@ -1,11 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using csiro_mvc.Data;
 using csiro_mvc.Models;
-using csiro_mvc.Repositories;
 using csiro_mvc.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -14,7 +13,7 @@ namespace csiro_mvc.Tests
     public class ApplicationServiceTests
     {
         private readonly ApplicationDbContext _context;
-        private readonly Mock<IUnitOfWork> _mockUnitOfWork;
+        private readonly ILogger<ApplicationService> _logger;
         private readonly ApplicationService _service;
 
         public ApplicationServiceTests()
@@ -24,92 +23,125 @@ namespace csiro_mvc.Tests
                 .Options;
 
             _context = new ApplicationDbContext(options);
-            _mockUnitOfWork = new Mock<IUnitOfWork>();
-            _service = new ApplicationService(_context, _mockUnitOfWork.Object);
+
+            var loggerMock = new Mock<ILogger<ApplicationService>>();
+            _logger = loggerMock.Object;
+
+            _service = new ApplicationService(_context, _logger);
         }
 
         [Fact]
-        public async Task GetApplicationByIdAsync_ReturnsApplication_WhenApplicationExists()
+        public async Task CreateApplicationAsync_ValidForm_ReturnsApplication()
         {
             // Arrange
-            var application = new Application
+            var userId = "testUser";
+            var programId = 1;
+            var form = new ApplicationForm
             {
-                Id = 1,
-                UserId = "user1",
-                Title = "Test Application",
-                CourseType = Course.DataScience,
-                GPA = 3.5,
-                University = "Test University",
-                CoverLetter = "Test Cover Letter",
-                Status = ApplicationStatus.Draft
+                ProgramTitle = "Test Program",
+                CourseType = "PhD"
             };
 
-            _context.Applications.Add(application);
+            var program = new ResearchProgram
+            {
+                Id = programId,
+                Title = "Test Program",
+                Department = "Test Department",
+                IsActive = true,
+                OpenPositions = 1
+            };
+
+            await _context.ResearchPrograms.AddAsync(program);
             await _context.SaveChangesAsync();
 
             // Act
-            var result = await _service.GetApplicationByIdAsync(1);
+            var result = await _service.CreateApplicationAsync(userId, programId, form);
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal("Test Application", result.Title);
+            Assert.Equal(userId, result.UserId);
+            Assert.Equal(form.ProgramTitle, result.ProgramTitle);
+            Assert.Equal(form.CourseType, result.CourseType);
+            Assert.Equal(ApplicationStatus.Draft, result.Status);
+            Assert.Single(result.StatusHistory);
         }
 
         [Fact]
-        public async Task CreateApplicationAsync_CreatesNewApplication()
+        public async Task GetApplicationsAsync_ReturnsUserApplications()
         {
             // Arrange
+            var userId = "testUser";
             var application = new Application
             {
-                UserId = "user1",
-                Title = "Test Application",
-                CourseType = Course.DataScience,
-                GPA = 3.5,
-                University = "Test University",
-                CoverLetter = "Test Cover Letter",
-                Status = ApplicationStatus.Draft
+                UserId = userId,
+                ProgramTitle = "Test Program",
+                CourseType = "PhD",
+                Status = ApplicationStatus.Draft,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
             };
 
-            // Act
-            await _service.CreateApplicationAsync(application);
-
-            // Assert
-            var result = await _context.Applications.FirstOrDefaultAsync(a => a.Title == "Test Application");
-            Assert.NotNull(result);
-            Assert.Equal("Test Application", result.Title);
-        }
-
-        [Fact]
-        public async Task SearchApplicationsAsync_ReturnsMatchingApplications()
-        {
-            // Arrange
-            var applications = new List<Application>
-            {
-                new Application
-                {
-                    UserId = "user1",
-                    Title = "Data Science Application",
-                    CourseType = Course.DataScience,
-                    University = "MIT"
-                },
-                new Application
-                {
-                    UserId = "user1",
-                    Title = "AI Application",
-                    CourseType = Course.ArtificialIntelligence,
-                    University = "Stanford"
-                }
-            };
-
-            await _context.Applications.AddRangeAsync(applications);
+            await _context.Applications.AddAsync(application);
             await _context.SaveChangesAsync();
 
             // Act
-            var results = await _service.SearchApplicationsAsync("user1", "Data");
+            var results = await _service.GetApplicationsAsync(userId);
 
             // Assert
             Assert.Single(results);
-            Assert.Contains(results, a => a.Title == "Data Science Application");
+            Assert.Equal(userId, results[0].UserId);
+        }
+
+        [Fact]
+        public async Task UpdateApplicationAsync_ValidUpdate_ReturnsUpdatedApplication()
+        {
+            // Arrange
+            var application = new Application
+            {
+                UserId = "testUser",
+                ProgramTitle = "Test Program",
+                CourseType = "PhD",
+                Status = ApplicationStatus.Draft,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            await _context.Applications.AddAsync(application);
+            await _context.SaveChangesAsync();
+
+            application.Status = ApplicationStatus.Submitted;
+
+            // Act
+            var result = await _service.UpdateApplicationAsync(application.Id, application);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(ApplicationStatus.Submitted, result.Status);
+        }
+
+        [Fact]
+        public async Task DeleteApplicationAsync_ExistingApplication_ReturnsTrue()
+        {
+            // Arrange
+            var application = new Application
+            {
+                UserId = "testUser",
+                ProgramTitle = "Test Program",
+                CourseType = "PhD",
+                Status = ApplicationStatus.Draft,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            await _context.Applications.AddAsync(application);
+            await _context.SaveChangesAsync();
+
+            // Act
+            var result = await _service.DeleteApplicationAsync(application.Id);
+
+            // Assert
+            Assert.True(result);
+            Assert.Null(await _context.Applications.FindAsync(application.Id));
         }
     }
 }

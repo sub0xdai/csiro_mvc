@@ -8,24 +8,20 @@ namespace csiro_mvc.Models
     {
         [Key]
         public int Id { get; set; }
-
-        [Required]
+        
         public int ApplicationId { get; set; }
-
-        [Required]
-        public ApplicationStatus OldStatus { get; set; }
-
-        [Required]
-        public ApplicationStatus NewStatus { get; set; }
-
-        [Required]
-        public DateTime ChangedAt { get; set; }
-
-        [Required]
-        public string ChangedBy { get; set; } = string.Empty;
-
-        // Navigation property
         [ForeignKey("ApplicationId")]
-        public virtual Application? Application { get; set; }
+        public Application? Application { get; set; }
+        
+        public ApplicationStatus OldStatus { get; set; }
+        public ApplicationStatus Status { get; set; }  // Current status
+        public string? ChangedBy { get; set; }
+        public DateTime ChangedAt { get; set; }
+        public string? Comment { get; set; }
+        
+        public ApplicationStatusHistory()
+        {
+            ChangedAt = DateTime.UtcNow;
+        }
     }
 }

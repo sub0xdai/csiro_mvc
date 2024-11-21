@@ -20,10 +20,14 @@ try
     // Add Serilog
     builder.Host.UseSerilog((context, services, configuration) => configuration
         .MinimumLevel.Debug()
-        .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+        .MinimumLevel.Override("Microsoft", LogEventLevel.Debug)
+        .MinimumLevel.Override("System", LogEventLevel.Debug)
         .Enrich.FromLogContext()
-        .WriteTo.Console()
-        .WriteTo.File("logs/csiro_mvc-.txt", rollingInterval: RollingInterval.Day));
+        .WriteTo.Console(
+            outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")
+        .WriteTo.File("logs/csiro_mvc-.txt", 
+            rollingInterval: RollingInterval.Day,
+            outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}"));
 
     // Add services to the container.
     builder.Services.AddControllersWithViews();
@@ -37,11 +41,16 @@ try
     builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
     builder.Services.AddScoped<IApplicationRepository, ApplicationRepository>();
     builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+    builder.Services.AddScoped<IAdminSettingsRepository, AdminSettingsRepository>();
 
     // Add Application Services
     builder.Services.AddScoped<IApplicationService, ApplicationService>();
+    builder.Services.AddScoped<IUniversityService, UniversityService>();
+    builder.Services.AddScoped<IResearchProgramService, ResearchProgramService>();
     builder.Services.AddScoped<IApplicationSettingsService, ApplicationSettingsService>();
     builder.Services.AddScoped<IFileUploadService, FileUploadService>();
+    builder.Services.AddScoped<IAdminService, AdminService>();
+    builder.Services.AddScoped<INotificationService, NotificationService>();
 
     // Add Custom Cache Service (Singleton for cache consistency)
     builder.Services.AddSingleton<ICacheService, CustomCacheService>();
@@ -96,20 +105,20 @@ try
     using (var scope = app.Services.CreateScope())
     {
         var services = scope.ServiceProvider;
-        var logger = services.GetRequiredService<ILogger<Program>>();
         try
         {
             var context = services.GetRequiredService<ApplicationDbContext>();
             context.Database.Migrate();
             
             // Initialize database with roles and admin user
-            await DbInitializer.Initialize(services, logger);
+            await DbInitializer.Initialize(services, null);
             
-            logger.LogInformation("Database initialization completed successfully.");
+            await SeedData.Initialize(services);
+            Log.Information("Database seeded successfully");
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "An error occurred while initializing the database.");
+            Log.Error(ex, "An error occurred while initializing the database");
             throw;
         }
     }

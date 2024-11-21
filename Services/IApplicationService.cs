@@ -1,26 +1,24 @@
-using System.Threading.Tasks;
-using System.Collections.Generic;
 using csiro_mvc.Models;
 using csiro_mvc.Models.ViewModels;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace csiro_mvc.Services
 {
     public interface IApplicationService
     {
-        Task<IEnumerable<Application>> GetAllApplicationsAsync();
-        Task<IEnumerable<Application>> GetApplicationsAsync(string userId);
         Task<Application?> GetApplicationByIdAsync(int id);
-        Task CreateApplicationAsync(Application application);
-        Task UpdateApplicationAsync(Application application);
-        Task DeleteApplicationAsync(int id);
-        Task<IEnumerable<Application>> GetApplicationsByUserIdAsync(string userId);
-        Task<IEnumerable<Application>> SearchApplicationsAsync(string userId, string searchTerm);
-        Task<List<ResearchProgram>> GetAllProgramsAsync();
-        Task<ResearchProgram> GetProgramByIdAsync(int id);
-        Task<List<ResearchProgram>> GetRecentProgramsAsync(int count = 5);
-        Task<int> GetUserApplicationsCountAsync(string userId);
-        Task<int> GetTotalApplicationsCountAsync(string userId);
-        Task<List<ApplicationStatusChange>> GetRecentStatusChangesAsync(string userId);
-        Task TrackStatusChangeAsync(Application application, ApplicationStatus? oldStatus, string userId);
+        Task<Application> CreateApplicationAsync(string userId, int programId, ApplicationForm form);
+        Task<List<Application>> GetApplicationsAsync(string userId);
+        Task<List<Application>> SearchApplicationsAsync(string searchTerm);
+        Task<Application?> UpdateApplicationAsync(int id, Application application);
+        Task<bool> DeleteApplicationAsync(int id);
+        Task<int> GetTotalApplicationsCountAsync();
+        Task<List<ApplicationStatusChangeViewModel>> GetRecentStatusChangesAsync(string userId);
+        Task TrackStatusChangeAsync(int applicationId, ApplicationStatus? oldStatus, ApplicationStatus newStatus, string userId);
+        Task<List<ApplicationStatusChangeViewModel>> GetStatusChangesAsync(string applicationId);
+        
+        // Admin methods
+        Task<List<Application>> GetAllApplicationsAsync();
     }
 }

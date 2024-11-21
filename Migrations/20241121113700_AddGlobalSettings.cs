@@ -6,24 +6,30 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace csiro_mvc.Migrations
 {
     /// <inheritdoc />
-    public partial class AddResearchPrograms : Migration
+    public partial class AddGlobalSettings : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.AddColumn<double>(
+                name: "MinimumGPA",
+                table: "ApplicationSettings",
+                type: "double precision",
+                nullable: false,
+                defaultValue: 0.0);
+
             migrationBuilder.CreateTable(
-                name: "ResearchPrograms",
+                name: "GlobalSettings",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "text", nullable: false),
-                    Description = table.Column<string>(type: "text", nullable: false),
-                    OpenPositions = table.Column<int>(type: "integer", nullable: false)
+                    Key = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    Value = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ResearchPrograms", x => x.Id);
+                    table.PrimaryKey("PK_GlobalSettings", x => x.Id);
                 });
         }
 
@@ -31,7 +37,11 @@ namespace csiro_mvc.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "ResearchPrograms");
+                name: "GlobalSettings");
+
+            migrationBuilder.DropColumn(
+                name: "MinimumGPA",
+                table: "ApplicationSettings");
         }
     }
 }

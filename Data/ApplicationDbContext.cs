@@ -1,6 +1,6 @@
-using csiro_mvc.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using csiro_mvc.Models;
 
 namespace csiro_mvc.Data
 {
@@ -11,10 +11,12 @@ namespace csiro_mvc.Data
         {
         }
 
-        public DbSet<Application> Applications { get; set; } = null!;
-        public DbSet<ApplicationSettings> ApplicationSettings { get; set; } = null!;
-        public DbSet<ApplicationStatusHistory> ApplicationStatusHistory { get; set; } = null!;
-        public DbSet<ResearchProgram> ResearchPrograms { get; set; } = null!;
+        public DbSet<Application> Applications { get; set; }
+        public DbSet<ApplicationSettings> ApplicationSettings { get; set; }
+        public DbSet<ApplicationStatusHistory> ApplicationStatusHistories { get; set; }
+        public DbSet<ResearchProgram> ResearchPrograms { get; set; }
+        public DbSet<University> Universities { get; set; }
+        public DbSet<GlobalSetting> GlobalSettings { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -57,6 +59,73 @@ namespace csiro_mvc.Data
                 .WithOne(s => s.Application)
                 .HasForeignKey<ApplicationSettings>(s => s.ApplicationId);
 
+            // Configure Application entity
+            builder.Entity<Application>(entity =>
+            {
+                entity.Property(e => e.Status)
+                    .HasDefaultValue(ApplicationStatus.Draft)
+                    .IsRequired();
+
+                entity.Property(e => e.CreatedAt)
+                    .HasColumnType("timestamp with time zone")
+                    .HasConversion(
+                        v => DateTime.SpecifyKind(v, DateTimeKind.Utc),
+                        v => DateTime.SpecifyKind(v, DateTimeKind.Utc))
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP AT TIME ZONE 'UTC'");
+
+                entity.Property(e => e.UpdatedAt)
+                    .HasColumnType("timestamp with time zone")
+                    .HasConversion(
+                        v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : v,
+                        v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : v)
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP AT TIME ZONE 'UTC'");
+
+                entity.HasOne(e => e.User)
+                    .WithMany(e => e.Applications)
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Configure ResearchProgram entity
+            builder.Entity<ResearchProgram>(entity =>
+            {
+                entity.Property(e => e.CreatedAt)
+                    .HasColumnType("timestamp with time zone")
+                    .HasConversion(
+                        v => DateTime.SpecifyKind(v, DateTimeKind.Utc),
+                        v => DateTime.SpecifyKind(v, DateTimeKind.Utc))
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP AT TIME ZONE 'UTC'");
+
+                entity.Property(e => e.UpdatedAt)
+                    .HasColumnType("timestamp with time zone")
+                    .HasConversion(
+                        v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : v,
+                        v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : v);
+
+                entity.Property(e => e.StartDate)
+                    .HasColumnType("timestamp with time zone")
+                    .HasConversion(
+                        v => DateTime.SpecifyKind(v, DateTimeKind.Utc),
+                        v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+
+                entity.Property(e => e.EndDate)
+                    .HasColumnType("timestamp with time zone")
+                    .HasConversion(
+                        v => DateTime.SpecifyKind(v, DateTimeKind.Utc),
+                        v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+            });
+
+            // Configure ApplicationStatusHistory entity
+            builder.Entity<ApplicationStatusHistory>(entity =>
+            {
+                entity.Property(e => e.ChangedAt)
+                    .HasColumnType("timestamp with time zone")
+                    .HasConversion(
+                        v => DateTime.SpecifyKind(v, DateTimeKind.Utc),
+                        v => DateTime.SpecifyKind(v, DateTimeKind.Utc))
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP AT TIME ZONE 'UTC'");
+            });
+
             // Configure indexes
             builder.Entity<Application>()
                 .HasIndex(a => a.UserId);
@@ -67,51 +136,83 @@ namespace csiro_mvc.Data
             builder.Entity<ApplicationUser>()
                 .HasIndex(u => u.Department);
 
-            // Configure default values
-            builder.Entity<Application>()
-                .Property(a => a.Status)
-                .HasDefaultValue(ApplicationStatus.Pending);
-
-            builder.Entity<Application>()
-                .Property(a => a.CreatedAt)
-                .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-            // Seed Research Programs
+            // Seed research programs with proper UTC timestamps
+            var now = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc);
             builder.Entity<ResearchProgram>().HasData(
-                new ResearchProgram 
-                { 
-                    Id = 1, 
-                    Name = "Data61", 
-                    Description = "Digital and data innovation for Australia's digital future", 
-                    OpenPositions = 5 
+                new ResearchProgram
+                {
+                    Id = 1,
+                    Title = "Advanced Machine Learning Research",
+                    Description = "Research in advanced machine learning techniques focusing on deep learning and neural networks.",
+                    OpenPositions = 2,
+                    Department = "Computer Science",
+                    Supervisor = "Dr. John Smith",
+                    FundingAmount = 75000,
+                    StartDate = now.AddMonths(1),
+                    EndDate = now.AddYears(2),
+                    IsActive = true,
+                    CreatedAt = now,
+                    UpdatedAt = now
                 },
-                new ResearchProgram 
-                { 
-                    Id = 2, 
-                    Name = "Space and Astronomy", 
-                    Description = "Unlocking the secrets of the universe and supporting Australia's space industry", 
-                    OpenPositions = 3 
+                new ResearchProgram
+                {
+                    Id = 2,
+                    Title = "Quantum Computing Applications",
+                    Description = "Exploring practical applications of quantum computing in cryptography and optimization.",
+                    OpenPositions = 3,
+                    Department = "Physics",
+                    Supervisor = "Dr. Sarah Johnson",
+                    FundingAmount = 100000,
+                    StartDate = now.AddMonths(2),
+                    EndDate = now.AddYears(3),
+                    IsActive = true,
+                    CreatedAt = now,
+                    UpdatedAt = now
                 },
-                new ResearchProgram 
-                { 
-                    Id = 3, 
-                    Name = "Energy", 
-                    Description = "Developing sustainable energy solutions for a cleaner future", 
-                    OpenPositions = 4 
+                new ResearchProgram
+                {
+                    Id = 3,
+                    Title = "Sustainable Energy Systems",
+                    Description = "Research in renewable energy systems and smart grid technologies.",
+                    OpenPositions = 4,
+                    Department = "Engineering",
+                    Supervisor = "Dr. Michael Brown",
+                    FundingAmount = 120000,
+                    StartDate = now.AddMonths(1),
+                    EndDate = now.AddYears(2),
+                    IsActive = true,
+                    CreatedAt = now,
+                    UpdatedAt = now
                 },
-                new ResearchProgram 
-                { 
-                    Id = 4, 
-                    Name = "Manufacturing", 
-                    Description = "Advanced manufacturing technologies and processes", 
-                    OpenPositions = 2 
+                new ResearchProgram
+                {
+                    Id = 4,
+                    Title = "Data Science for Healthcare",
+                    Description = "Applying data science techniques to improve healthcare outcomes and patient care.",
+                    OpenPositions = 2,
+                    Department = "Health Sciences",
+                    Supervisor = "Dr. Emily Chen",
+                    FundingAmount = 90000,
+                    StartDate = now.AddMonths(3),
+                    EndDate = now.AddYears(2),
+                    IsActive = true,
+                    CreatedAt = now,
+                    UpdatedAt = now
                 },
-                new ResearchProgram 
-                { 
-                    Id = 5, 
-                    Name = "Health and Biosecurity", 
-                    Description = "Improving health outcomes and protecting Australia's biosecurity", 
-                    OpenPositions = 6 
+                new ResearchProgram
+                {
+                    Id = 5,
+                    Title = "Artificial Intelligence Ethics",
+                    Description = "Research on ethical implications and governance of AI systems.",
+                    OpenPositions = 3,
+                    Department = "Philosophy",
+                    Supervisor = "Dr. David Wilson",
+                    FundingAmount = 80000,
+                    StartDate = now.AddMonths(2),
+                    EndDate = now.AddYears(2),
+                    IsActive = true,
+                    CreatedAt = now,
+                    UpdatedAt = now
                 }
             );
         }

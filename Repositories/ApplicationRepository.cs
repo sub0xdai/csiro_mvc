@@ -90,6 +90,7 @@ namespace csiro_mvc.Repositories
 
             if (application.Settings != null)
             {
+                existingApplication.Settings ??= new ApplicationSettings();
                 existingApplication.Settings.NotificationsEnabled = application.Settings.NotificationsEnabled;
                 existingApplication.Settings.Theme = application.Settings.Theme;
                 existingApplication.Settings.Language = application.Settings.Language;

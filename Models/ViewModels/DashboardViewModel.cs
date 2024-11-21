@@ -19,9 +19,8 @@ namespace csiro_mvc.Models.ViewModels
         public double SuccessRate { get; set; }
         public TimeSpan AverageResponseTime { get; set; }
 
-        // Recent Activity
-        public IEnumerable<Application> Applications { get; set; } = new List<Application>();
-        public IEnumerable<ResearchProgram> RecentPrograms { get; set; } = new List<ResearchProgram>();
-        public IEnumerable<ApplicationStatusChange> RecentStatusChanges { get; set; } = new List<ApplicationStatusChange>();
+        // Collections
+        public List<Application> Applications { get; set; } = new();
+        public List<ResearchProgram> AvailablePrograms { get; set; } = new();
     }
 }

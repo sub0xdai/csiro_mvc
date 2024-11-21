@@ -87,5 +87,42 @@ namespace csiro_mvc.Services
             var settings = await GetSettingsByApplicationIdAsync(applicationId);
             return settings != null;
         }
+
+        public async Task<ApplicationSettings> GetSettingsAsync()
+        {
+            try
+            {
+                var settings = await ApplicationSettings.GetByApplicationIdAsync(0);
+                return settings ?? new ApplicationSettings { MinimumGPA = 3.0 }; // Default GPA cutoff
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Error getting global settings");
+                throw;
+            }
+        }
+
+        public async Task UpdateMinimumGPAAsync(double minimumGPA)
+        {
+            try
+            {
+                var settings = await GetSettingsAsync();
+                settings.MinimumGPA = minimumGPA;
+
+                if (settings.Id == 0)
+                {
+                    await CreateSettingsAsync(settings);
+                }
+                else
+                {
+                    await UpdateSettingsAsync(settings);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Error updating minimum GPA requirement");
+                throw;
+            }
+        }
     }
 }

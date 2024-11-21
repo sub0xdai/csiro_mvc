@@ -23,6 +23,11 @@ namespace csiro_mvc.Models
         [Display(Name = "Language")]
         public string Language { get; set; } = "English";
 
+        [Required]
+        [Range(0.0, 4.0)]
+        [Display(Name = "Minimum GPA Requirement")]
+        public double MinimumGPA { get; set; } = 3.0;
+
         // Navigation property
         public virtual Application? Application { get; set; }
     }

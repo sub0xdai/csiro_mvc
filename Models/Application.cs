@@ -26,12 +26,16 @@ namespace csiro_mvc.Models
 
         [Required]
         [StringLength(100)]
-        [Display(Name = "Position Title")]
+        [Display(Name = "Program Title")]
         public string Title { get; set; } = string.Empty;
 
         [Required]
+        public int ResearchProgramId { get; set; }
+        public ResearchProgram? ResearchProgram { get; set; }
+
+        [Required]
         [Display(Name = "Course")]
-        public Course CourseType { get; set; }
+        public string CourseType { get; set; } = string.Empty;
 
         [Required]
         [Range(3.0, 4.0, ErrorMessage = "GPA must be between 3.0 and 4.0")]
@@ -45,38 +49,51 @@ namespace csiro_mvc.Models
         [Required]
         [Display(Name = "Cover Letter")]
         [DataType(DataType.MultilineText)]
-        [StringLength(2000)]
         public string CoverLetter { get; set; } = string.Empty;
 
-        [Display(Name = "CV")]
-        public string? CVPath { get; set; }
+        [Required]
+        [Display(Name = "CV File Path")]
+        public string CVFilePath { get; set; } = string.Empty;
 
-        public ApplicationStatus Status { get; set; }
+        public string CVPath { get; set; } = string.Empty;
+
+        [ForeignKey("UserId")]
+        public virtual ApplicationUser? User { get; set; }
+
+        public virtual ApplicationSettings? Settings { get; set; }
+
+        public virtual ICollection<ApplicationStatusHistory> StatusHistory { get; set; } = new List<ApplicationStatusHistory>();
 
         [Required]
-        public DateTime CreatedAt { get; set; }
+        [Display(Name = "Status")]
+        public ApplicationStatus Status { get; set; } = ApplicationStatus.Draft;
 
-        public DateTime? UpdatedAt { get; set; }
+        private DateTime _createdAt = DateTime.UtcNow;
+
+        [Required]
+        [Column(TypeName = "timestamp with time zone")]
+        public DateTime CreatedAt
+        {
+            get => _createdAt;
+            set => _createdAt = DateTime.SpecifyKind(value, DateTimeKind.Utc);
+        }
+
+        private DateTime? _updatedAt;
+
+        [Column(TypeName = "timestamp with time zone")]
+        public DateTime? UpdatedAt
+        {
+            get => _updatedAt;
+            set => _updatedAt = value.HasValue ? DateTime.SpecifyKind(value.Value, DateTimeKind.Utc) : null;
+        }
 
         [NotMapped]
         public DateTime LastModified => UpdatedAt ?? CreatedAt;
 
-        // Navigation properties
-        [ForeignKey("UserId")]
-        public virtual ApplicationUser? User { get; set; }
-        public virtual ApplicationSettings? Settings { get; set; }
-        public virtual ICollection<ApplicationStatusHistory> StatusHistory { get; set; } = new List<ApplicationStatusHistory>();
-    }
-
-    public enum ApplicationStatus
-    {
-        Draft,
-        Submitted,
-        UnderReview,
-        InReview,
-        Pending,
-        Approved,
-        Rejected,
-        Withdrawn
+        /// <summary>
+        /// The title of the research program this application is for
+        /// </summary>
+        [Required]
+        public string ProgramTitle { get; set; } = string.Empty;
     }
 }

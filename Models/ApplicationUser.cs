@@ -10,8 +10,10 @@ namespace csiro_mvc.Models
         public string? Position { get; set; }
         public string? Qualification { get; set; }
         public string? University { get; set; }
+        public string? Role { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
+        public DateTime? LastLoginTime { get; set; }
         public bool IsActive { get; set; } = true;
         public bool IsProfileComplete { get; set; } = false;
 
