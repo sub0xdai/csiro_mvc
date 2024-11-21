@@ -91,12 +91,5 @@ For production deployment:
 - XSS prevention
 - SQL injection protection
 
-## Contributing
-This project is part of a group assessment. All contributions should be:
-- Properly documented
-- Tested thoroughly
-- Reviewed by team members
-- Compliant with the existing code style
 
-## License
-[License details to be added]
+
