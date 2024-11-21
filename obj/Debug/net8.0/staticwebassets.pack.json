@@ -245,6 +245,10 @@
       "PackagePath": "staticwebassets/lib/jquery/dist/jquery.min.map"
     },
     {
+      "Id": "/home/sub0x/1-projects/MVC/csiro_mvc/wwwroot/uploads/71d679a8-318b-43f0-bcf3-c34f645f60fb_resumeIT.docx",
+      "PackagePath": "staticwebassets/uploads/71d679a8-318b-43f0-bcf3-c34f645f60fb_resumeIT.docx"
+    },
+    {
       "Id": "obj/Debug/net8.0/staticwebassets/msbuild.build.csiro_mvc.props",
       "PackagePath": "build\\csiro_mvc.props"
     },

@@ -12,8 +12,9 @@ namespace csiro_mvc.Data
         }
 
         public DbSet<Application> Applications { get; set; } = null!;
-        public DbSet<ResearchProgram> ResearchPrograms { get; set; } = null!;
         public DbSet<ApplicationSettings> ApplicationSettings { get; set; } = null!;
+        public DbSet<ApplicationStatusHistory> ApplicationStatusHistory { get; set; } = null!;
+        public DbSet<ResearchProgram> ResearchPrograms { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

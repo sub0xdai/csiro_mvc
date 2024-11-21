@@ -26,7 +26,6 @@ namespace csiro_mvc.ViewModels
         public bool RememberMe { get; set; }
     }
 
-    // Separate models for Login and Register
     public class LoginViewModel
     {
         [Required(ErrorMessage = "Email is required")]
@@ -45,13 +44,21 @@ namespace csiro_mvc.ViewModels
 
     public class RegisterViewModel
     {
+        [Required(ErrorMessage = "First Name is required")]
+        [Display(Name = "First Name")]
+        public string FirstName { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Last Name is required")]
+        [Display(Name = "Last Name")]
+        public string LastName { get; set; } = string.Empty;
+
         [Required(ErrorMessage = "Email is required")]
         [EmailAddress(ErrorMessage = "Invalid email address")]
         [Display(Name = "Email")]
         public string Email { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Password is required")]
-        [StringLength(100, ErrorMessage = "The password must be at least {2} characters long.", MinimumLength = 6)]
+        [StringLength(100, ErrorMessage = "The {0} must be at least {2} characters long.", MinimumLength = 6)]
         [DataType(DataType.Password)]
         [Display(Name = "Password")]
         public string Password { get; set; } = string.Empty;

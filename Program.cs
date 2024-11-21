@@ -8,6 +8,7 @@ using csiro_mvc.Middleware;
 using Serilog;
 using Serilog.Events;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore;
 
 try
 {
@@ -26,6 +27,7 @@ try
 
     // Add services to the container.
     builder.Services.AddControllersWithViews();
+    builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
     // Add DbContext
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -113,15 +115,16 @@ try
     }
 
     // Configure the HTTP request pipeline.
-    if (!app.Environment.IsDevelopment())
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseDeveloperExceptionPage();
+        app.UseMigrationsEndPoint();
+    }
+    else
     {
         app.UseExceptionHandler("/Home/Error");
         app.UseHsts();
         app.UseHttpsRedirection();
-    }
-    else
-    {
-        app.UseDeveloperExceptionPage();
     }
 
     // Add Serilog request logging

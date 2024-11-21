@@ -9,12 +9,7 @@
             <label asp-for="Title" class="form-label"></label>
             <input asp-for="Title" class="form-control" />
             <span asp-validation-for="Title" class="text-danger"></span>
-        </div>
-
-        <div class="mb-3">
-            <label asp-for="Description" class="form-label"></label>
-            <textarea asp-for="Description" class="form-control" rows="3"></textarea>
-            <span asp-validation-for="Description" class="text-danger"></span>
+            <small class="form-text text-muted">Enter the title of the research position you are applying for.</small>
         </div>
 
         <div class="mb-3">
@@ -45,8 +40,9 @@
 
         <div class="mb-3">
             <label asp-for="CVFile" class="form-label">CV</label>
-            <input type="file" name="cvFile" class="form-control" accept=".pdf,.doc,.docx" />
+            <input asp-for="CVFile" class="form-control" accept=".pdf,.doc,.docx" />
             <span asp-validation-for="CVFile" class="text-danger"></span>
+            <small class="form-text text-muted">Upload your CV in PDF, DOC, or DOCX format.</small>
         </div>
 
         <button type="submit" class="btn btn-primary">Submit Application</button>

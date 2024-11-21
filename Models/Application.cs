@@ -26,11 +26,8 @@ namespace csiro_mvc.Models
 
         [Required]
         [StringLength(100)]
+        [Display(Name = "Position Title")]
         public string Title { get; set; } = string.Empty;
-
-        [Required]
-        [StringLength(2000)]
-        public string Description { get; set; } = string.Empty;
 
         [Required]
         [Display(Name = "Course")]
@@ -68,6 +65,7 @@ namespace csiro_mvc.Models
         [ForeignKey("UserId")]
         public virtual ApplicationUser? User { get; set; }
         public virtual ApplicationSettings? Settings { get; set; }
+        public virtual ICollection<ApplicationStatusHistory> StatusHistory { get; set; } = new List<ApplicationStatusHistory>();
     }
 
     public enum ApplicationStatus

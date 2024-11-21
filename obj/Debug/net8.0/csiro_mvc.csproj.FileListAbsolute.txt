@@ -130,3 +130,4 @@
 /home/sub0x/1-projects/MVC/csiro_mvc/obj/Debug/net8.0/csiro_mvc.genruntimeconfig.cache
 /home/sub0x/1-projects/MVC/csiro_mvc/obj/Debug/net8.0/ref/csiro_mvc.dll
 /home/sub0x/1-projects/MVC/csiro_mvc/bin/Debug/net8.0/Microsoft.EntityFrameworkCore.InMemory.dll
+/home/sub0x/1-projects/MVC/csiro_mvc/bin/Debug/net8.0/Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.dll

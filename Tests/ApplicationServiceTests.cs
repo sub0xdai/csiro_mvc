@@ -37,7 +37,6 @@ namespace csiro_mvc.Tests
                 Id = 1,
                 UserId = "user1",
                 Title = "Test Application",
-                Description = "Test Description",
                 CourseType = Course.DataScience,
                 GPA = 3.5,
                 University = "Test University",
@@ -64,7 +63,6 @@ namespace csiro_mvc.Tests
             {
                 UserId = "user1",
                 Title = "Test Application",
-                Description = "Test Description",
                 CourseType = Course.DataScience,
                 GPA = 3.5,
                 University = "Test University",
@@ -78,7 +76,7 @@ namespace csiro_mvc.Tests
             // Assert
             var result = await _context.Applications.FirstOrDefaultAsync(a => a.Title == "Test Application");
             Assert.NotNull(result);
-            Assert.Equal("Test Description", result.Description);
+            Assert.Equal("Test Application", result.Title);
         }
 
         [Fact]
@@ -91,7 +89,6 @@ namespace csiro_mvc.Tests
                 {
                     UserId = "user1",
                     Title = "Data Science Application",
-                    Description = "ML Research",
                     CourseType = Course.DataScience,
                     University = "MIT"
                 },
@@ -99,7 +96,6 @@ namespace csiro_mvc.Tests
                 {
                     UserId = "user1",
                     Title = "AI Application",
-                    Description = "AI Research",
                     CourseType = Course.ArtificialIntelligence,
                     University = "Stanford"
                 }

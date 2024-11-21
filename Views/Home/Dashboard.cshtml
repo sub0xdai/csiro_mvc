@@ -1,4 +1,5 @@
 @model csiro_mvc.Models.ViewModels.DashboardViewModel
+@using csiro_mvc.Models
 
 @{
     ViewData["Title"] = "Dashboard";
@@ -26,7 +27,45 @@
                     <p class="card-text">
                         You have submitted <strong>@Model.TotalApplications</strong> application(s).
                     </p>
-                    <a href="#" class="btn btn-primary">View Applications</a>
+                    @if (Model.Applications != null && Model.Applications.Any())
+                    {
+                        <div class="table-responsive mb-3">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Program</th>
+                                        <th>Status</th>
+                                        <th>Submitted</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var app in Model.Applications)
+                                    {
+                                        <tr>
+                                            <td>@app.Title</td>
+                                            <td>
+                                                <span class="badge bg-@(app.Status switch {
+                                                    ApplicationStatus.Pending => "warning",
+                                                    ApplicationStatus.Approved => "success",
+                                                    ApplicationStatus.Rejected => "danger",
+                                                    _ => "secondary"
+                                                })">
+                                                    @app.Status
+                                                </span>
+                                            </td>
+                                            <td>@app.CreatedAt.ToString("d")</td>
+                                            <td>
+                                                <a asp-controller="Application" asp-action="Details" asp-route-id="@app.Id" 
+                                                   class="btn btn-sm btn-outline-primary">View</a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    <a asp-controller="Application" asp-action="Index" class="btn btn-primary">View All Applications</a>
                 </div>
             </div>
         </div>
@@ -42,7 +81,8 @@
                         <div class="list-group">
                             @foreach (var program in Model.RecentPrograms)
                             {
-                                <a href="#" class="list-group-item list-group-item-action">
+                                <a asp-controller="Programs" asp-action="Details" asp-route-id="@program.Id" 
+                                   class="list-group-item list-group-item-action">
                                     <div class="d-flex w-100 justify-content-between">
                                         <h6 class="mb-1">@program.Name</h6>
                                         <small>@program.OpenPositions positions</small>

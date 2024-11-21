@@ -36,29 +36,9 @@ namespace csiro_mvc.Controllers
                 Department = user.Department ?? "",
                 Position = user.Position ?? "",
                 Qualification = user.Qualification ?? "",
-                University = user.University ?? ""
-            };
-
-            return View(viewModel);
-        }
-
-        public async Task<IActionResult> Complete()
-        {
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-            {
-                return NotFound();
-            }
-
-            var viewModel = new ProfileViewModel
-            {
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Email = user.Email!,
-                Department = user.Department ?? "",
-                Position = user.Position ?? "",
-                Qualification = user.Qualification ?? "",
-                University = user.University ?? ""
+                University = user.University ?? "",
+                PhoneNumber = user.PhoneNumber ?? "",
+                IsProfileComplete = user.IsProfileComplete
             };
 
             return View(viewModel);
@@ -66,105 +46,76 @@ namespace csiro_mvc.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Complete([FromForm] ProfileViewModel model)
+        public async Task<IActionResult> Complete(ProfileViewModel model)
         {
-            _logger.LogInformation("Profile completion attempt received for model: {@Model}", model);
-
             if (!ModelState.IsValid)
             {
-                _logger.LogWarning("Model state is invalid: {@ModelState}", ModelState);
-                return View(model);
-            }
-
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-            {
-                _logger.LogWarning("User not found during profile completion");
-                return NotFound();
-            }
-
-            try
-            {
-                user.FirstName = model.FirstName;
-                user.LastName = model.LastName;
-                user.Department = model.Department;
-                user.Position = model.Position;
-                user.Qualification = model.Qualification;
-                user.University = model.University;
-                user.UpdatedAt = DateTime.UtcNow;
-                user.UpdateProfileCompletionStatus();
-
-                var result = await _userManager.UpdateAsync(user);
-                if (result.Succeeded)
-                {
-                    _logger.LogInformation("User {UserId} completed their profile successfully", user.Id);
-                    TempData["StatusMessage"] = "Your profile has been updated successfully.";
-                    return RedirectToAction(nameof(Index));
-                }
-
-                foreach (var error in result.Errors)
-                {
-                    ModelState.AddModelError(string.Empty, error.Description);
-                    _logger.LogError("Error updating user profile: {Error}", error.Description);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error updating user profile");
-                ModelState.AddModelError(string.Empty, "An error occurred while updating your profile.");
-            }
-
-            return View(model);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Update(ProfileViewModel model)
-        {
-            _logger.LogInformation("Profile update attempt received for model: {@Model}", model);
-
-            if (!ModelState.IsValid)
-            {
-                _logger.LogWarning("Model state is invalid: {@ModelState}", ModelState);
                 return View("Index", model);
             }
 
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
-                _logger.LogWarning("User not found during profile update");
                 return NotFound();
             }
 
-            try
+            user.FirstName = model.FirstName;
+            user.LastName = model.LastName;
+            user.Department = model.Department;
+            user.Position = model.Position;
+            user.Qualification = model.Qualification;
+            user.University = model.University;
+            user.PhoneNumber = model.PhoneNumber;
+            user.IsProfileComplete = true;
+
+            var result = await _userManager.UpdateAsync(user);
+            if (result.Succeeded)
             {
-                user.FirstName = model.FirstName;
-                user.LastName = model.LastName;
-                user.Department = model.Department;
-                user.Position = model.Position;
-                user.Qualification = model.Qualification;
-                user.University = model.University;
-                user.UpdatedAt = DateTime.UtcNow;
-                user.UpdateProfileCompletionStatus();
-
-                var result = await _userManager.UpdateAsync(user);
-                if (result.Succeeded)
-                {
-                    _logger.LogInformation("User {UserId} updated their profile successfully", user.Id);
-                    TempData["StatusMessage"] = "Your profile has been updated successfully.";
-                    return RedirectToAction(nameof(Index));
-                }
-
-                foreach (var error in result.Errors)
-                {
-                    ModelState.AddModelError(string.Empty, error.Description);
-                    _logger.LogError("Error updating user profile: {Error}", error.Description);
-                }
+                TempData["StatusMessage"] = "Your profile has been completed successfully.";
+                return RedirectToAction("Index", "Home");
             }
-            catch (Exception ex)
+
+            foreach (var error in result.Errors)
             {
-                _logger.LogError(ex, "Error updating user profile");
-                ModelState.AddModelError(string.Empty, "An error occurred while updating your profile.");
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
+
+            return View("Index", model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Update(ProfileViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View("Index", model);
+            }
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            user.FirstName = model.FirstName;
+            user.LastName = model.LastName;
+            user.Department = model.Department;
+            user.Position = model.Position;
+            user.Qualification = model.Qualification;
+            user.University = model.University;
+            user.PhoneNumber = model.PhoneNumber;
+
+            var result = await _userManager.UpdateAsync(user);
+            if (result.Succeeded)
+            {
+                TempData["StatusMessage"] = "Your profile has been updated successfully.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
             }
 
             return View("Index", model);

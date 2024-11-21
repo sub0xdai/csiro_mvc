@@ -46,7 +46,6 @@ namespace csiro_mvc.Repositories
                 searchTerm = searchTerm.ToLower();
                 query = query.Where(a => 
                     EF.Functions.Like(a.Title.ToLower(), $"%{searchTerm}%") || 
-                    EF.Functions.Like(a.Description.ToLower(), $"%{searchTerm}%") ||
                     EF.Functions.Like(a.CourseType.ToString().ToLower(), $"%{searchTerm}%"));
             }
 
@@ -86,7 +85,6 @@ namespace csiro_mvc.Repositories
                 return null;
 
             existingApplication.Title = application.Title;
-            existingApplication.Description = application.Description;
             existingApplication.Status = application.Status;
             existingApplication.UpdatedAt = DateTime.UtcNow;
 
@@ -145,7 +143,6 @@ namespace csiro_mvc.Repositories
                 searchTerm = searchTerm.ToLower();
                 query = query.Where(a => 
                     EF.Functions.Like(a.Title.ToLower(), $"%{searchTerm}%") || 
-                    EF.Functions.Like(a.Description.ToLower(), $"%{searchTerm}%") ||
                     EF.Functions.Like(a.CourseType.ToString().ToLower(), $"%{searchTerm}%"));
             }
 

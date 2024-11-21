@@ -44,50 +44,45 @@ namespace csiro_mvc.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = new ApplicationUser { 
+                var user = new ApplicationUser 
+                { 
                     UserName = model.Email, 
                     Email = model.Email,
-                    FirstName = "",
-                    LastName = "",
-                    Department = "",
-                    Position = "",
-                    Qualification = "",
-                    University = ""
+                    FirstName = model.FirstName ?? "",
+                    LastName = model.LastName ?? "",
+                    IsProfileComplete = false
                 };
 
                 var result = await _userManager.CreateAsync(user, model.Password);
 
                 if (result.Succeeded)
                 {
+                    _logger.LogInformation("User created a new account with password.");
+
                     // Check if this is the first user
-                    if (_userManager.Users.Count() == 1)
+                    if (!await _roleManager.RoleExistsAsync("Admin"))
                     {
-                        // Create Admin role if it doesn't exist
-                        if (!await _roleManager.RoleExistsAsync("Admin"))
-                        {
-                            await _roleManager.CreateAsync(new IdentityRole("Admin"));
-                        }
-                        // Assign Admin role to the first user
+                        // Create roles if they don't exist
+                        await _roleManager.CreateAsync(new IdentityRole("Admin"));
+                        await _roleManager.CreateAsync(new IdentityRole("Applicant"));
+                        await _roleManager.CreateAsync(new IdentityRole("Researcher"));
+                        
+                        // Assign Admin role to first user
                         await _userManager.AddToRoleAsync(user, "Admin");
                     }
                     else
                     {
-                        // Assign default Applicant role to new users
-                        if (!await _roleManager.RoleExistsAsync("Applicant"))
-                        {
-                            await _roleManager.CreateAsync(new IdentityRole("Applicant"));
-                        }
+                        // Assign Applicant role to subsequent users
                         await _userManager.AddToRoleAsync(user, "Applicant");
                     }
 
-                    await _signInManager.SignInAsync(user, isPersistent: true);
-                    return RedirectToAction("Index", "Home");
+                    await _signInManager.SignInAsync(user, isPersistent: false);
+                    return RedirectToAction("Index", "Profile");
                 }
 
                 foreach (var error in result.Errors)
                 {
                     ModelState.AddModelError(string.Empty, error.Description);
-                    _logger.LogWarning("Registration error: {Error}", error.Description);
                 }
             }
 
@@ -95,48 +90,31 @@ namespace csiro_mvc.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
             if (ModelState.IsValid)
             {
                 var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
+                
                 if (result.Succeeded)
                 {
-                    var user = await _userManager.FindByEmailAsync(model.Email);
-                    if (user != null)
-                    {
-                        // Get user's roles
-                        var roles = await _userManager.GetRolesAsync(user);
-                        
-                        // Sign out first to clear any existing claims
-                        await _signInManager.SignOutAsync();
-                        
-                        // Sign in again with roles
-                        await _signInManager.SignInAsync(user, model.RememberMe);
-                        
-                        _logger.LogInformation("User {Email} logged in successfully with roles: {Roles}", 
-                            user.Email, string.Join(", ", roles));
-                            
-                        return RedirectToAction("Index", "Home");
-                    }
+                    _logger.LogInformation("User logged in.");
+                    return RedirectToAction("Index", "Home");
                 }
                 
                 ModelState.AddModelError(string.Empty, "Invalid login attempt.");
-                _logger.LogWarning("Invalid login attempt for user: {Email}", model.Email);
             }
 
             return View(model);
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
-            var user = await _userManager.GetUserAsync(User);
-            if (user != null)
-            {
-                _logger.LogInformation("User logged out: {Email}", user.Email);
-            }
             await _signInManager.SignOutAsync();
+            _logger.LogInformation("User logged out.");
             return RedirectToAction("Index", "Home");
         }
     }

@@ -32,8 +32,11 @@ namespace csiro_mvc.Models.ViewModels
         [Display(Name = "University")]
         public string University { get; set; } = string.Empty;
 
+        [Required]
         [Phone]
         [Display(Name = "Phone Number")]
-        public string? PhoneNumber { get; set; }
+        public string PhoneNumber { get; set; } = string.Empty;
+
+        public bool IsProfileComplete { get; set; }
     }
 }

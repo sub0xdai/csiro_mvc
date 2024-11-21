@@ -38,28 +38,57 @@ namespace csiro_mvc.Controllers
 
         [Authorize]
         public async Task<IActionResult> Dashboard()
-        {
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
             {
-                return NotFound();
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null)
+                {
+                    return NotFound();
+                }
+
+                var applications = await _applicationService.GetApplicationsByUserIdAsync(user.Id);
+                var recentPrograms = await _applicationService.GetRecentProgramsAsync(5); // Get 5 most recent programs
+
+                // Calculate application statistics
+                var totalApps = applications.Count();
+                var pendingApps = applications.Count(a => a.Status == ApplicationStatus.Pending);
+                var approvedApps = applications.Count(a => a.Status == ApplicationStatus.Approved);
+                var rejectedApps = applications.Count(a => a.Status == ApplicationStatus.Rejected);
+                
+                // Calculate success rate (approved applications / total completed applications)
+                var completedApps = approvedApps + rejectedApps;
+                var successRate = completedApps > 0 ? (double)approvedApps / completedApps * 100 : 0;
+
+                // Calculate average response time for completed applications
+                var averageResponseTime = TimeSpan.Zero;
+                var completedApplications = applications.Where(a => 
+                    a.Status == ApplicationStatus.Approved || a.Status == ApplicationStatus.Rejected);
+                
+                if (completedApplications.Any())
+                {
+                    var totalResponseTime = completedApplications.Sum(a => 
+                        ((a.UpdatedAt ?? DateTime.Now) - a.CreatedAt).TotalMilliseconds);
+                    averageResponseTime = TimeSpan.FromMilliseconds(totalResponseTime / completedApplications.Count());
+                }
+
+                var viewModel = new DashboardViewModel
+                {
+                    FirstName = user.FirstName,
+                    Department = user.Department ?? "",
+                    Role = (await _userManager.GetRolesAsync(user)).FirstOrDefault() ?? "User",
+                    LastLoginTime = DateTime.Now,
+                    Applications = applications.Take(5),
+                    TotalApplications = totalApps,
+                    PendingApplications = pendingApps,
+                    ApprovedApplications = approvedApps,
+                    RejectedApplications = rejectedApps,
+                    SuccessRate = successRate,
+                    AverageResponseTime = averageResponseTime,
+                    RecentPrograms = recentPrograms,
+                    RecentStatusChanges = await _applicationService.GetRecentStatusChangesAsync(User.FindFirstValue(ClaimTypes.NameIdentifier))
+                };
+
+                return View(viewModel);
             }
-
-            var roles = await _userManager.GetRolesAsync(user);
-            var viewModel = new DashboardViewModel
-            {
-                UserName = user.UserName ?? "User",
-                FirstName = user.FirstName ?? string.Empty,
-                LastName = user.LastName ?? string.Empty,
-                Department = user.Department ?? "Not Set",
-                Role = roles.FirstOrDefault() ?? "User",
-                LastLoginTime = DateTime.Now,
-                TotalApplications = await _applicationService.GetUserApplicationsCountAsync(user.Id),
-                RecentPrograms = await _applicationService.GetRecentProgramsAsync()
-            };
-
-            return View(viewModel);
-        }
 
         public IActionResult Programs()
         {

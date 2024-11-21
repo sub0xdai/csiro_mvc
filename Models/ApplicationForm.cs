@@ -9,11 +9,8 @@ namespace csiro_mvc.Models
 
         [Required]
         [StringLength(100)]
+        [Display(Name = "Position Title")]
         public string Title { get; set; } = string.Empty;
-
-        [Required]
-        [StringLength(2000)]
-        public string Description { get; set; } = string.Empty;
 
         [Required]
         [Display(Name = "Course")]
@@ -37,7 +34,6 @@ namespace csiro_mvc.Models
         [Display(Name = "CV")]
         public IFormFile? CVFile { get; set; }
 
-        [Required]
         public string UserId { get; set; } = string.Empty;
         public ApplicationUser? User { get; set; }
 

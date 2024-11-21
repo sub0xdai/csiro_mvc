@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using csiro_mvc.Models;
+using csiro_mvc.Models.ViewModels;
 
 namespace csiro_mvc.Services
 {
@@ -18,5 +19,8 @@ namespace csiro_mvc.Services
         Task<ResearchProgram> GetProgramByIdAsync(int id);
         Task<List<ResearchProgram>> GetRecentProgramsAsync(int count = 5);
         Task<int> GetUserApplicationsCountAsync(string userId);
+        Task<int> GetTotalApplicationsCountAsync(string userId);
+        Task<List<ApplicationStatusChange>> GetRecentStatusChangesAsync(string userId);
+        Task TrackStatusChangeAsync(Application application, ApplicationStatus? oldStatus, string userId);
     }
 }

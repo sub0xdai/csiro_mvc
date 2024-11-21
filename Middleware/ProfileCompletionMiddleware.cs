@@ -19,13 +19,13 @@ namespace csiro_mvc.Middleware
             if (context.User.Identity?.IsAuthenticated == true)
             {
                 var user = await userManager.GetUserAsync(context.User);
-                if (user != null && !user.CheckProfileComplete())
+                if (user != null && !user.IsProfileComplete)
                 {
-                    // Allow access to profile page and logout
-                    if (!IsProfileRelatedPath(context.Request.Path))
+                    // Allow access to profile page, authentication pages, and static files
+                    if (!IsAllowedPath(context.Request.Path))
                     {
                         _logger.LogInformation("Redirecting user {UserId} to complete profile", user.Id);
-                        context.Response.Redirect("/Profile/Complete");
+                        context.Response.Redirect("/Profile/Index");
                         return;
                     }
                 }
@@ -34,13 +34,14 @@ namespace csiro_mvc.Middleware
             await _next(context);
         }
 
-        private bool IsProfileRelatedPath(PathString path)
+        private bool IsAllowedPath(PathString path)
         {
             return path.StartsWithSegments("/Profile") ||
-                   path.StartsWithSegments("/Account/Logout") ||
+                   path.StartsWithSegments("/Account") ||
                    path.StartsWithSegments("/lib") ||
                    path.StartsWithSegments("/css") ||
-                   path.StartsWithSegments("/js");
+                   path.StartsWithSegments("/js") ||
+                   path.StartsWithSegments("/Identity");
         }
     }
 
